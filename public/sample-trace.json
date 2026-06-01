@@ -1,0 +1,85 @@
+{
+  "runId": "run_litrag_7f3a",
+  "task": "Answer: 'What is the evidence for semaglutide reducing cardiovascular events?' with citations",
+  "nodes": [
+    {
+      "id": "n1",
+      "kind": "model_call",
+      "label": "Plan approach",
+      "input": "User question about semaglutide CV outcomes. Decide tools + steps.",
+      "output": "Plan: 1) search PubMed for SELECT trial 2) pull abstracts 3) draft answer with citations 4) verify each claim.",
+      "eval": { "status": "pass", "score": 0.96, "note": "On-task, sound plan" },
+      "latencyMs": 910,
+      "tokens": { "in": 380, "out": 132 }
+    },
+    {
+      "id": "n2",
+      "kind": "tool_call",
+      "label": "search_pubmed",
+      "input": "query='semaglutide cardiovascular outcomes SELECT trial', retmax=5",
+      "output": "5 PMIDs returned (incl. 37952131 — SELECT primary results, NEJM 2023).",
+      "eval": { "status": "pass", "score": 0.99, "note": "Found the landmark trial" },
+      "latencyMs": 1240,
+      "tokens": { "in": 90, "out": 210 }
+    },
+    {
+      "id": "n3",
+      "kind": "retrieval",
+      "label": "get_abstract (SELECT)",
+      "input": "pmid=37952131",
+      "output": "Semaglutide 2.4mg: 20% reduction in MACE (HR 0.80, 95% CI 0.72-0.90) vs placebo in overweight/obese CVD patients without diabetes.",
+      "eval": { "status": "pass", "score": 0.98, "note": "Primary endpoint retrieved" },
+      "latencyMs": 640,
+      "tokens": { "in": 60, "out": 180 }
+    },
+    {
+      "id": "n4",
+      "kind": "retrieval",
+      "label": "get_abstract (meta-analysis)",
+      "input": "pmid=36181499",
+      "output": "Abstract truncated; full text behind paywall. Only conclusion sentence available.",
+      "eval": { "status": "warn", "score": 0.61, "note": "Partial content — low coverage" },
+      "latencyMs": 580,
+      "tokens": { "in": 55, "out": 70 }
+    },
+    {
+      "id": "n5",
+      "kind": "model_call",
+      "label": "Draft answer",
+      "input": "Synthesize SELECT + meta-analysis into a cited answer.",
+      "output": "Semaglutide reduced MACE by 20% (SELECT, NEJM 2023) [1]. A 2022 meta-analysis was broadly consistent [2].",
+      "eval": { "status": "fail", "score": 0.38, "note": "Cited [2] for a claim the partial abstract doesn't support" },
+      "latencyMs": 1480,
+      "tokens": { "in": 520, "out": 240 }
+    },
+    {
+      "id": "n6",
+      "kind": "decision",
+      "label": "Citation check",
+      "input": "Verify each claim maps to retrieved evidence.",
+      "output": "Claim 2 unsupported by retrieved text → route back to revise.",
+      "eval": { "status": "pass", "score": 0.93, "note": "Caught the unsupported claim" },
+      "latencyMs": 720,
+      "tokens": { "in": 300, "out": 64 }
+    },
+    {
+      "id": "n7",
+      "kind": "model_call",
+      "label": "Revise answer",
+      "input": "Drop or hedge the unsupported meta-analysis claim.",
+      "output": "Semaglutide 2.4mg reduced MACE by 20% vs placebo (HR 0.80; SELECT, NEJM 2023) [1]. Evidence beyond this trial was not retrievable in full.",
+      "eval": { "status": "pass", "score": 0.95, "note": "Faithful to retrieved evidence" },
+      "latencyMs": 1120,
+      "tokens": { "in": 360, "out": 150 }
+    }
+  ],
+  "edges": [
+    { "from": "n1", "to": "n2" },
+    { "from": "n2", "to": "n3" },
+    { "from": "n2", "to": "n4" },
+    { "from": "n3", "to": "n5" },
+    { "from": "n4", "to": "n5" },
+    { "from": "n5", "to": "n6" },
+    { "from": "n6", "to": "n7", "label": "revise" }
+  ]
+}

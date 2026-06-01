@@ -1,23 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import { Stage, Layer, Rect, Text, Group } from 'react-konva'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Stage, Layer, Rect } from 'react-konva'
 import type Konva from 'konva'
+import { useStore } from '../store'
+import { TraceNode } from './TraceNode'
+import { TraceEdge } from './TraceEdge'
 
-/** Proof-of-render placeholder nodes; M2 replaces these with a real trace. */
-const DEMO_NODES = [
-  { id: 'n1', x: 80, y: 120, label: 'Plan steps', kind: 'model_call', status: 'pass' },
-  { id: 'n2', x: 340, y: 60, label: 'Web search', kind: 'tool_call', status: 'pass' },
-  { id: 'n3', x: 340, y: 200, label: 'Retrieve docs', kind: 'retrieval', status: 'warn' },
-  { id: 'n4', x: 620, y: 130, label: 'Summarize', kind: 'model_call', status: 'fail' },
-] as const
-
-const STATUS_COLOR: Record<string, string> = {
-  pass: '#3ecf8e',
-  warn: '#e7b85c',
-  fail: '#f06d6d',
-}
-
-const NODE_W = 180
-const NODE_H = 64
 const MIN_SCALE = 0.25
 const MAX_SCALE = 4
 
@@ -27,7 +14,16 @@ export function CanvasStage() {
   const [scale, setScale] = useState(1)
   const [pos, setPos] = useState({ x: 0, y: 0 })
 
-  // Track container size so the stage fills the available area responsively.
+  const nodes = useStore((s) => s.nodes)
+  const trace = useStore((s) => s.trace)
+  const selectedId = useStore((s) => s.selectedId)
+  const select = useStore((s) => s.select)
+
+  const nodeById = useMemo(() => {
+    const m = new Map(nodes.map((n) => [n.id, n]))
+    return m
+  }, [nodes])
+
   useEffect(() => {
     const el = wrapRef.current
     if (!el) return
@@ -39,7 +35,6 @@ export function CanvasStage() {
     return () => ro.disconnect()
   }, [])
 
-  // Zoom toward the cursor on wheel.
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
     const stage = e.target.getStage()
@@ -52,9 +47,8 @@ export function CanvasStage() {
       x: (pointer.x - pos.x) / oldScale,
       y: (pointer.y - pos.y) / oldScale,
     }
-    const direction = e.evt.deltaY > 0 ? -1 : 1
     const factor = 1.08
-    let newScale = direction > 0 ? oldScale * factor : oldScale / factor
+    let newScale = e.evt.deltaY > 0 ? oldScale / factor : oldScale * factor
     newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale))
 
     setScale(newScale)
@@ -76,35 +70,26 @@ export function CanvasStage() {
         draggable
         onWheel={handleWheel}
         onDragEnd={(e) => setPos({ x: e.target.x(), y: e.target.y() })}
+        onMouseDown={(e) => {
+          // click on empty canvas (the Stage itself) deselects
+          if (e.target === e.target.getStage()) select(null)
+        }}
         style={{ background: '#0d0f14' }}
       >
-        <Layer>
+        <Layer listening={false}>
           <BackgroundDots width={size.width} height={size.height} scale={scale} pos={pos} />
         </Layer>
         <Layer>
-          {DEMO_NODES.map((n) => (
-            <Group key={n.id} x={n.x} y={n.y}>
-              <Rect
-                width={NODE_W}
-                height={NODE_H}
-                cornerRadius={10}
-                fill="#161a22"
-                stroke={STATUS_COLOR[n.status]}
-                strokeWidth={2}
-                shadowColor="#000"
-                shadowBlur={8}
-                shadowOpacity={0.4}
-              />
-              <Text
-                text={n.label}
-                x={14}
-                y={14}
-                fontSize={15}
-                fontStyle="600"
-                fill="#f4f6fa"
-              />
-              <Text text={n.kind} x={14} y={38} fontSize={12} fill="#8a90a0" />
-            </Group>
+          {trace?.edges.map((e, i) => {
+            const from = nodeById.get(e.from)
+            const to = nodeById.get(e.to)
+            if (!from || !to) return null
+            return <TraceEdge key={i} from={from} to={to} label={e.label} />
+          })}
+        </Layer>
+        <Layer>
+          {nodes.map((n) => (
+            <TraceNode key={n.id} node={n} selected={n.id === selectedId} onSelect={select} />
           ))}
         </Layer>
       </Stage>
@@ -112,7 +97,6 @@ export function CanvasStage() {
   )
 }
 
-/** A dotted grid that covers the visible region regardless of pan/zoom. */
 function BackgroundDots({
   width,
   height,
@@ -125,21 +109,17 @@ function BackgroundDots({
   pos: { x: number; y: number }
 }) {
   const gap = 28
-  // World-space bounds currently visible.
   const x0 = -pos.x / scale
   const y0 = -pos.y / scale
   const x1 = (width - pos.x) / scale
   const y1 = (height - pos.y) / scale
-
   const startX = Math.floor(x0 / gap) * gap
   const startY = Math.floor(y0 / gap) * gap
 
   const dots = []
   for (let x = startX; x < x1; x += gap) {
     for (let y = startY; y < y1; y += gap) {
-      dots.push(
-        <Rect key={`${x}:${y}`} x={x} y={y} width={2} height={2} fill="#222733" />,
-      )
+      dots.push(<Rect key={`${x}:${y}`} x={x} y={y} width={2} height={2} fill="#222733" />)
     }
   }
   return <>{dots}</>

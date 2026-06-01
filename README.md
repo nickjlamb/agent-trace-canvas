@@ -12,9 +12,15 @@ Think *LangSmith traces meet an infinite canvas* — agent observability you can
 ## Why
 
 Reading a giant JSON trace log to debug an agent is painful. Spatial beats linear: branches,
-retries, and dead-ends are obvious when you *see* the graph. This makes agent **evals legible** —
-in the demo run, the agent hallucinates a citation, the eval scores that step `fail`, and a
-downstream citation-check catches it and routes to a revise. The whole story reads off the canvas.
+retries, and dead-ends are obvious when you *see* the graph. This makes agent **evals legible**.
+
+The bundled demo is a **real run against the [PubCrawl](https://github.com/nickjlamb) MCP server** —
+a literature agent answering *"what is the evidence for lecanemab slowing cognitive decline in early
+Alzheimer's?"* The tool inputs/outputs are genuine (real PMIDs, the CLARITY-AD primary endpoint, a
+real systematic review). At step `Draft answer` the agent overstates the clinical magnitude — it
+ignores that the −0.45 CDR-SB difference is below the typical MCID — the eval scores that step
+`fail`, a citation-check catches it, and a revise step fixes it. The whole story reads off the
+canvas. (Latency/token figures are illustrative; the tool I/O is real.)
 
 ![Step inspector](docs/inspector.png)
 

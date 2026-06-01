@@ -28,6 +28,8 @@ export interface TraceEdge {
 export interface Trace {
   runId: string
   task: string
+  /** Provenance of the trace data (e.g. which tools produced it). */
+  source?: string
   nodes: TraceNode[]
   edges: TraceEdge[]
 }

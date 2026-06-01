@@ -24,14 +24,6 @@ export function LiveBar({
 
   return (
     <div className="livebar">
-      {notice && <div className="livebar-notice">{notice}</div>}
-      <div className="livebar-chips">
-        {EXAMPLES.map((ex) => (
-          <button key={ex} className="livebar-chip" disabled={streaming} onClick={() => onRun(ex)}>
-            {ex}
-          </button>
-        ))}
-      </div>
       <div className="livebar-row">
         <input
           className="livebar-input"
@@ -46,6 +38,14 @@ export function LiveBar({
           {streaming ? '● running…' : '⚡ Run live'}
         </button>
       </div>
+      <div className="livebar-chips">
+        {EXAMPLES.map((ex) => (
+          <button key={ex} className="livebar-chip" disabled={streaming} onClick={() => onRun(ex)}>
+            {ex}
+          </button>
+        ))}
+      </div>
+      {notice && <div className="livebar-notice">{notice}</div>}
     </div>
   )
 }

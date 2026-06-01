@@ -189,10 +189,9 @@ html, body, #root {
 /* ---- Search ---- */
 .search {
   position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 260px;
+  top: 92px;
+  left: 16px;
+  width: 240px;
   z-index: 6;
 }
 .search-input {
@@ -234,7 +233,7 @@ html, body, #root {
 /* ---- Live bar (run a real agent) ---- */
 .livebar {
   position: absolute;
-  bottom: 18px;
+  top: 80px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 6;

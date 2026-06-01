@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Stage, Layer, Rect } from 'react-konva'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { Stage, Layer } from 'react-konva'
 import type Konva from 'konva'
 import { useStore, MIN_SCALE, MAX_SCALE } from '../store'
 import { TraceNode } from './TraceNode'
@@ -34,8 +34,44 @@ export function CanvasStage() {
     return () => ro.disconnect()
   }, [setViewport])
 
-  // Fit the whole trace into view. Once per trace normally; continuously while
-  // streaming so the growing graph stays framed as nodes arrive.
+  // --- Eased camera: glide the viewport toward a target instead of snapping. ---
+  const targetRef = useRef<{ scale: number; x: number; y: number } | null>(null)
+  const rafRef = useRef(0)
+  const animate = useCallback(() => {
+    const t = targetRef.current
+    if (!t) return
+    const cur = useStore.getState().viewport
+    const k = 0.22
+    let nx = cur.x + (t.x - cur.x) * k
+    let ny = cur.y + (t.y - cur.y) * k
+    let ns = cur.scale + (t.scale - cur.scale) * k
+    const done =
+      Math.abs(t.x - nx) < 0.5 && Math.abs(t.y - ny) < 0.5 && Math.abs(t.scale - ns) < 0.002
+    if (done) {
+      nx = t.x
+      ny = t.y
+      ns = t.scale
+      targetRef.current = null
+    }
+    setViewport({ x: nx, y: ny, scale: ns })
+    if (!done) rafRef.current = requestAnimationFrame(animate)
+  }, [setViewport])
+
+  const glideTo = useCallback(
+    (target: { scale: number; x: number; y: number }) => {
+      targetRef.current = target
+      cancelAnimationFrame(rafRef.current)
+      rafRef.current = requestAnimationFrame(animate)
+    },
+    [animate],
+  )
+
+  useEffect(() => () => cancelAnimationFrame(rafRef.current), [])
+
+  // Viewport control:
+  //  - while streaming: hold a readable zoom and pan to follow the active node
+  //    (a camera tracking the agent left-to-right), so nodes stay legible.
+  //  - otherwise: fit the whole trace once (also runs when a run ends → zoom out).
   const fittedRun = useRef<string | null>(null)
   useEffect(() => {
     if (!trace || nodes.length === 0 || width === 0 || height === 0) return
@@ -49,21 +85,33 @@ export function CanvasStage() {
     const graphH = maxY - minY
     const pad = 80
 
-    // When the detail panel is open, fit into the space left of it so nodes
-    // (and the active step) aren't hidden behind the panel.
+    // Reserve space when the detail panel is open so nodes aren't hidden behind it.
     const PANEL_W = 380
     const panelOpen = !!(selectedId || activeId)
     const availW = width - (panelOpen ? PANEL_W : 0)
 
+    if (streaming) {
+      // Camera-follow: readable zoom (fit height), keep the active step ~2/3 across.
+      const active = nodes.find((n) => n.id === activeId) ?? nodes[nodes.length - 1]
+      const s = Math.min(1, Math.max(0.55, (height - pad * 2) / graphH))
+      const cx = active.x + active.width / 2
+      glideTo({
+        scale: s,
+        x: availW * 0.66 - cx * s,
+        y: (height - graphH * s) / 2 - minY * s,
+      })
+      return
+    }
+
     const fit = Math.min((availW - pad * 2) / graphW, (height - pad * 2) / graphH, 1.2)
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fit))
-    setViewport({
+    glideTo({
       scale: newScale,
       x: (availW - graphW * newScale) / 2 - minX * newScale,
       y: (height - graphH * newScale) / 2 - minY * newScale,
     })
-    if (!streaming) fittedRun.current = trace.runId
-  }, [trace, nodes, width, height, streaming, selectedId, activeId, setViewport])
+    fittedRun.current = trace.runId
+  }, [trace, nodes, width, height, streaming, selectedId, activeId, glideTo])
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
@@ -72,6 +120,8 @@ export function CanvasStage() {
     const pointer = stage.getPointerPosition()
     if (!pointer) return
 
+    cancelAnimationFrame(rafRef.current) // user takes over
+    targetRef.current = null
     const mousePoint = { x: (pointer.x - x) / scale, y: (pointer.y - y) / scale }
     const factor = 1.08
     let newScale = e.evt.deltaY > 0 ? scale / factor : scale * factor
@@ -85,7 +135,16 @@ export function CanvasStage() {
   }
 
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: '100%' }}>
+    <div
+      ref={wrapRef}
+      style={{
+        width: '100%',
+        height: '100%',
+        background: '#0d0f14',
+        backgroundImage: 'radial-gradient(#222733 1.1px, transparent 1.1px)',
+        backgroundSize: '26px 26px',
+      }}
+    >
       <Stage
         width={width}
         height={height}
@@ -95,15 +154,16 @@ export function CanvasStage() {
         scaleY={scale}
         draggable
         onWheel={handleWheel}
+        onDragStart={() => {
+          cancelAnimationFrame(rafRef.current)
+          targetRef.current = null
+        }}
         onDragEnd={(e) => setViewport({ x: e.target.x(), y: e.target.y() })}
         onMouseDown={(e) => {
           if (e.target === e.target.getStage()) select(null)
         }}
-        style={{ background: '#0d0f14' }}
+        style={{ background: 'transparent' }}
       >
-        <Layer listening={false}>
-          <BackgroundDots width={width} height={height} scale={scale} pos={{ x, y }} />
-        </Layer>
         <Layer>
           {trace?.edges.map((e, i) => {
             const from = nodeById.get(e.from)
@@ -126,32 +186,4 @@ export function CanvasStage() {
       </Stage>
     </div>
   )
-}
-
-function BackgroundDots({
-  width,
-  height,
-  scale,
-  pos,
-}: {
-  width: number
-  height: number
-  scale: number
-  pos: { x: number; y: number }
-}) {
-  const gap = 28
-  const x0 = -pos.x / scale
-  const y0 = -pos.y / scale
-  const x1 = (width - pos.x) / scale
-  const y1 = (height - pos.y) / scale
-  const startX = Math.floor(x0 / gap) * gap
-  const startY = Math.floor(y0 / gap) * gap
-
-  const dots = []
-  for (let xx = startX; xx < x1; xx += gap) {
-    for (let yy = startY; yy < y1; yy += gap) {
-      dots.push(<Rect key={`${xx}:${yy}`} x={xx} y={yy} width={2} height={2} fill="#222733" />)
-    }
-  }
-  return <>{dots}</>
 }

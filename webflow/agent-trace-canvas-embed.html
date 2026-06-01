@@ -113,11 +113,8 @@ letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal);
 }
 .atc-card-q { font-family: 'Newsreader', serif; font-size: 1.05rem; font-style: italic; color: var(--ink); line-height: 1.4; }
 .atc-card-hint { font-size: 0.72rem; color: var(--muted); line-height: 1.45; margin-top: auto; }
-.atc-card-example {
-border-left: 3px solid var(--teal); cursor: pointer; text-align: left;
-font: inherit; color: inherit; transition: background 0.2s;
-}
-.atc-card-example:hover { background: #eef5f4; }
+.atc-card-example { border-left: 3px solid var(--teal); }
+.atc-card-example .atc-card-run { align-self: flex-start; }
 .atc-card-ask { border-left: 3px solid var(--ink); }
 .atc-ask-row { display: flex; gap: 0.6rem; }
 .atc-card-input {
@@ -184,11 +181,12 @@ box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
 <h2 class="atc-heading">Watch the agent think</h2>
 
 <div class="atc-controls">
-<button class="atc-card atc-card-example" id="atc-example" type="button">
-<span class="atc-card-tag">▶ Watch a saved run</span>
+<div class="atc-card atc-card-example">
+<span class="atc-card-tag">Watch a saved run</span>
 <span class="atc-card-q">“What is the evidence for lecanemab slowing cognitive decline in early Alzheimer's?”</span>
+<button id="atc-example" class="atc-card-run" type="button">▶ Replay</button>
 <span class="atc-card-hint">Watch a finished run play back, step by step.</span>
-</button>
+</div>
 <div class="atc-card atc-card-ask">
 <span class="atc-card-tag">⚡ Ask your own</span>
 <div class="atc-ask-row">

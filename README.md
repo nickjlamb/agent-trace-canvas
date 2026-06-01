@@ -31,24 +31,29 @@ canvas. (Latency/token figures are illustrative; the tool I/O is real.)
 - **Eval-aware nodes** — colour-coded by `pass` / `warn` / `fail`, with per-step score
 - **Step inspector** — input, output, eval note, latency, tokens
 - **Run stats** — pass rate, failed count, total tokens, total latency
+- **Live replay** — a WebSocket server streams the run step-by-step; the graph
+  builds in real time with the active step highlighted (`▶ Replay live`, or
+  `?replay=1` to auto-start). Falls back to the static view if the socket drops.
 - **Deep links** — `?node=<id>` opens a specific step (shareable)
 
 ## Stack
 
-React 19 + TypeScript · Vite · **Konva** (`<canvas>`) · Zustand · dagre auto-layout
+**Frontend:** React 19 + TypeScript · Vite · **Konva** (`<canvas>`) · Zustand · dagre auto-layout
+**Server:** Node (`http` + **`ws`**) serving the static build and a `/ws` replay stream
 
 ## Run locally
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173
+npm run dev          # app on http://localhost:5173
+npm run dev:server   # (optional, separate terminal) WebSocket replay server for ▶ Replay
 ```
 
 ## Production build
 
 ```bash
 npm run build    # -> dist/
-npm start        # serve dist/ statically (honours $PORT)
+npm start        # node server: serves dist/ + /ws replay (honours $PORT)
 ```
 
 ## Trace format
@@ -73,9 +78,10 @@ railway up
 - [x] Pan/zoom infinite canvas
 - [x] Render agent traces with auto-layout
 - [x] Step inspector + run stats + deep links
-- [ ] **Live mode** — stream a running agent's steps over WebSocket (always-on Railway service)
+- [x] **Live replay** — stream the run over WebSocket, graph builds in real time
 - [ ] Mini-map + node search
 - [ ] PixiJS/WebGL renderer for very large traces
+- [ ] Optional truly-live mode — run a real agent behind your own API key
 
 ---
 Built by [Nick Lamb](https://github.com/nickjlamb).

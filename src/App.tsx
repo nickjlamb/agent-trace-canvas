@@ -19,6 +19,9 @@ function App() {
   const [fullTrace, setFullTrace] = useState<Trace | null>(null)
   const closerRef = useRef<(() => void) | null>(null)
 
+  // Embed mode (?embed=1): hide the title bar so the app sits cleanly in an iframe.
+  const embed = new URLSearchParams(window.location.search).get('embed') === '1'
+
   // Load the full trace up front (instant first paint; also our replay fallback).
   useEffect(() => {
     fetch('/sample-trace.json')
@@ -61,21 +64,30 @@ function App() {
     })
   }
 
+  const replayLabel = streaming ? '● streaming…' : '▶ Replay live'
+
   return (
-    <div className="app-shell">
-      <header className="app-header">
-        <div>
-          <h1>Agent Trace Canvas</h1>
-          <p>{trace ? trace.task : 'Loading trace…'}</p>
-        </div>
-        <button className="replay-btn" onClick={replay} disabled={streaming}>
-          {streaming ? '● streaming…' : '▶ Replay live'}
-        </button>
-      </header>
+    <div className={embed ? 'app-shell embed' : 'app-shell'}>
+      {!embed && (
+        <header className="app-header">
+          <div>
+            <h1>Agent Trace Canvas</h1>
+            <p>{trace ? trace.task : 'Loading trace…'}</p>
+          </div>
+          <button className="replay-btn" onClick={replay} disabled={streaming}>
+            {replayLabel}
+          </button>
+        </header>
+      )}
       <main className="app-main">
         <CanvasStage />
         <Overlay />
         <DetailPanel />
+        {embed && (
+          <button className="replay-btn replay-float" onClick={replay} disabled={streaming}>
+            {replayLabel}
+          </button>
+        )}
       </main>
     </div>
   )

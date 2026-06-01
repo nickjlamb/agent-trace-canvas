@@ -9,10 +9,14 @@ const STATUS_COLOR: Record<EvalStatus, string> = {
 
 export function DetailPanel() {
   const selectedId = useStore((s) => s.selectedId)
+  const activeId = useStore((s) => s.activeId)
+  const streaming = useStore((s) => s.streaming)
   const nodes = useStore((s) => s.nodes)
   const select = useStore((s) => s.select)
 
-  const node = nodes.find((n) => n.id === selectedId)
+  // While running, follow the active step; otherwise show the user's selection.
+  const shownId = selectedId ?? activeId
+  const node = nodes.find((n) => n.id === shownId)
   if (!node) return null
 
   const status = node.eval?.status
@@ -21,12 +25,17 @@ export function DetailPanel() {
     <aside className="detail-panel">
       <div className="detail-head">
         <div>
-          <div className="detail-kind">{node.kind.replace('_', ' ')}</div>
+          <div className="detail-kind">
+            {streaming && <span className="detail-live">● live</span>}
+            {node.kind.replace('_', ' ')}
+          </div>
           <h2 className="detail-title">{node.label}</h2>
         </div>
-        <button className="detail-close" onClick={() => select(null)} aria-label="Close">
-          ✕
-        </button>
+        {!streaming && (
+          <button className="detail-close" onClick={() => select(null)} aria-label="Close">
+            ✕
+          </button>
+        )}
       </div>
 
       {node.eval && (

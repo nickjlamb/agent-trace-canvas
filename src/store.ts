@@ -88,5 +88,11 @@ export const useStore = create<AppState>((set) => ({
       return { trace, nodes: layoutTrace(trace) }
     }),
 
-  endStream: () => set({ streaming: false, activeId: null }),
+  // Leave the final step's card open so the answer is readable when the run ends.
+  endStream: () =>
+    set((s) => ({
+      streaming: false,
+      activeId: null,
+      selectedId: s.nodes.length ? s.nodes[s.nodes.length - 1].id : s.selectedId,
+    })),
 }))

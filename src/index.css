@@ -280,6 +280,7 @@ html, body, #root {
   padding: 18px 20px;
   overflow-y: auto;
   animation: slide-in 0.16s ease-out;
+  z-index: 8; /* above mini-map / overlays */
 }
 
 @keyframes slide-in {
@@ -299,6 +300,16 @@ html, body, #root {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text);
+}
+.detail-live {
+  color: var(--pass);
+  font-weight: 700;
+  margin-right: 8px;
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .detail-title {

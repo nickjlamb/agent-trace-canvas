@@ -49,15 +49,21 @@ export function CanvasStage() {
     const graphH = maxY - minY
     const pad = 80
 
-    const fit = Math.min((width - pad * 2) / graphW, (height - pad * 2) / graphH, 1.2)
+    // When the detail panel is open, fit into the space left of it so nodes
+    // (and the active step) aren't hidden behind the panel.
+    const PANEL_W = 380
+    const panelOpen = !!(selectedId || activeId)
+    const availW = width - (panelOpen ? PANEL_W : 0)
+
+    const fit = Math.min((availW - pad * 2) / graphW, (height - pad * 2) / graphH, 1.2)
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fit))
     setViewport({
       scale: newScale,
-      x: (width - graphW * newScale) / 2 - minX * newScale,
+      x: (availW - graphW * newScale) / 2 - minX * newScale,
       y: (height - graphH * newScale) / 2 - minY * newScale,
     })
     if (!streaming) fittedRun.current = trace.runId
-  }, [trace, nodes, width, height, streaming, setViewport])
+  }, [trace, nodes, width, height, streaming, selectedId, activeId, setViewport])
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()

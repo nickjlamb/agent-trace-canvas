@@ -18,6 +18,8 @@ export function CanvasStage() {
   const trace = useStore((s) => s.trace)
   const selectedId = useStore((s) => s.selectedId)
   const select = useStore((s) => s.select)
+  const streaming = useStore((s) => s.streaming)
+  const activeId = useStore((s) => s.activeId)
 
   const nodeById = useMemo(() => {
     const m = new Map(nodes.map((n) => [n.id, n]))
@@ -35,11 +37,12 @@ export function CanvasStage() {
     return () => ro.disconnect()
   }, [])
 
-  // Fit the whole trace into view once per trace, after we know the viewport size.
+  // Fit the whole trace into view. Once per trace normally; continuously while
+  // streaming so the growing graph stays framed as nodes arrive.
   const fittedRun = useRef<string | null>(null)
   useEffect(() => {
     if (!trace || nodes.length === 0 || size.width === 0 || size.height === 0) return
-    if (fittedRun.current === trace.runId) return
+    if (!streaming && fittedRun.current === trace.runId) return
 
     const minX = Math.min(...nodes.map((n) => n.x))
     const minY = Math.min(...nodes.map((n) => n.y))
@@ -60,8 +63,8 @@ export function CanvasStage() {
       x: (size.width - graphW * newScale) / 2 - minX * newScale,
       y: (size.height - graphH * newScale) / 2 - minY * newScale,
     })
-    fittedRun.current = trace.runId
-  }, [trace, nodes, size])
+    if (!streaming) fittedRun.current = trace.runId
+  }, [trace, nodes, size, streaming])
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
@@ -117,7 +120,13 @@ export function CanvasStage() {
         </Layer>
         <Layer>
           {nodes.map((n) => (
-            <TraceNode key={n.id} node={n} selected={n.id === selectedId} onSelect={select} />
+            <TraceNode
+              key={n.id}
+              node={n}
+              selected={n.id === selectedId}
+              active={streaming && n.id === activeId}
+              onSelect={select}
+            />
           ))}
         </Layer>
       </Stage>

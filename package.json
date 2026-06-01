@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "serve -s dist"
+    "start": "node server/index.mjs",
+    "serve": "node server/index.mjs",
+    "dev:server": "PORT=3001 node server/index.mjs"
   },
   "dependencies": {
     "dagre": "^0.8.5",
@@ -17,6 +19,8 @@
     "react-dom": "^19.2.6",
     "react-konva": "^19.2.4",
     "serve": "^14.2.6",
+    "serve-handler": "^6.1.7",
+    "ws": "^8.21.0",
     "zustand": "^5.0.14"
   },
   "devDependencies": {

@@ -24,14 +24,17 @@ const KIND_ACCENT: Record<NodeKind, string> = {
 export function TraceNode({
   node,
   selected,
+  active,
   onSelect,
 }: {
   node: PositionedNode
   selected: boolean
+  active?: boolean
   onSelect: (id: string) => void
 }) {
   const status = node.eval?.status
   const border = status ? STATUS_COLOR[status] : '#3a3f4b'
+  const accent = KIND_ACCENT[node.kind]
 
   return (
     <Group
@@ -53,11 +56,11 @@ export function TraceNode({
         height={node.height}
         cornerRadius={10}
         fill="#161a22"
-        stroke={selected ? '#f4f6fa' : border}
-        strokeWidth={selected ? 3 : 2}
-        shadowColor="#000"
-        shadowBlur={selected ? 14 : 8}
-        shadowOpacity={0.45}
+        stroke={selected ? '#f4f6fa' : active ? accent : border}
+        strokeWidth={selected || active ? 3 : 2}
+        shadowColor={active ? accent : '#000'}
+        shadowBlur={active ? 22 : selected ? 14 : 8}
+        shadowOpacity={active ? 0.9 : 0.45}
       />
       {/* kind accent stripe */}
       <Rect width={5} height={node.height} cornerRadius={[10, 0, 0, 10]} fill={KIND_ACCENT[node.kind]} />

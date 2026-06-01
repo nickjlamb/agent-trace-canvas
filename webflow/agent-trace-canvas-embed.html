@@ -1,0 +1,157 @@
+<!--
+  ───────────────────────────────────────────────────────────────────────────
+  AGENT TRACE CANVAS — Webflow code-embed for /agent-trace-canvas
+  Matches the PharmaTools.AI / litrag design system (Newsreader + Inter +
+  Fira Code, teal #0d7377). Fully self-contained and scoped under .atc-root,
+  so it won't affect the rest of the page. Drop a single "Code Embed" on the
+  page and paste EVERYTHING between the START / END marker lines below.
+  The live app stays hosted on Railway and is embedded via the iframe.
+  ───────────────────────────────────────────────────────────────────────────
+-->
+
+<!-- AGENT TRACE CANVAS EMBED — START (paste from here) ────────────────────── -->
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,600;1,6..72,400&family=Inter:wght@300;400;500;600&family=Fira+Code:wght@300;400;500&display=swap");
+
+.atc-root {
+--ink: #0f1a2e;
+--paper: #ffffff;
+--off-white: #f7f8fa;
+--teal: #0d7377;
+--teal-light: #e6f3f3;
+--muted: #6b7b8d;
+--rule: #e2e5ea;
+--slate: #5b7a9d;
+--green: #2d7a4f;
+
+font-family: 'Inter', sans-serif;
+background: var(--paper);
+color: var(--ink);
+line-height: 1.6;
+-webkit-font-smoothing: antialiased;
+}
+.atc-root *, .atc-root *::before, .atc-root *::after { margin: 0; padding: 0; box-sizing: border-box; }
+.atc-width { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+/* === HERO === */
+.atc-hero { padding: 4.5rem 0 3rem; }
+.atc-kicker {
+display: inline-block;
+font-size: 0.65rem; font-weight: 500;
+letter-spacing: 0.2em; text-transform: uppercase;
+color: var(--teal); background: var(--teal-light);
+padding: 0.35rem 0.75rem; border-radius: 999px; margin-bottom: 1.5rem;
+}
+.atc-hero h1 {
+font-family: 'Newsreader', serif;
+font-size: clamp(2.3rem, 5vw, 3.5rem);
+line-height: 1.06; font-weight: 300; letter-spacing: -0.025em;
+max-width: 16ch; margin-bottom: 1.35rem; color: var(--ink);
+}
+.atc-hero h1 strong { font-weight: 400; color: var(--teal); }
+.atc-deck {
+font-size: 1.1rem; font-weight: 400; line-height: 1.65;
+color: var(--ink); max-width: 58ch; margin-bottom: 1.9rem;
+}
+.atc-deck em { font-style: italic; color: var(--muted); }
+
+.atc-features { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 2.1rem; }
+.atc-feature {
+display: inline-flex; align-items: center; gap: 0.5rem;
+font-size: 0.78rem; color: var(--ink);
+padding: 0.5rem 0.9rem; background: var(--paper);
+border: 1px solid var(--rule); border-radius: 999px;
+}
+.atc-feature::before {
+content: ''; width: 0.5rem; height: 0.5rem; border-radius: 50%;
+background: var(--teal); flex-shrink: 0;
+}
+.atc-feature.green::before { background: var(--green); }
+.atc-feature.slate::before { background: var(--slate); }
+
+.atc-ctas { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+.atc-btn-primary {
+display: inline-flex; align-items: center; gap: 0.55rem;
+font-size: 0.82rem; font-weight: 500; letter-spacing: 0.02em;
+color: var(--paper); background: var(--teal);
+text-decoration: none; padding: 0.85rem 1.5rem; border-radius: 4px;
+transition: background 0.25s, transform 0.2s;
+}
+.atc-btn-primary:hover { background: #0a5c5f; transform: translateY(-1px); }
+.atc-btn-secondary {
+display: inline-flex; align-items: center; gap: 0.45rem;
+font-size: 0.82rem; font-weight: 500; color: var(--ink);
+text-decoration: none; padding: 0.85rem 0.5rem; transition: color 0.25s;
+}
+.atc-btn-secondary:hover { color: var(--teal); }
+.atc-license { font-size: 0.72rem; color: var(--muted); margin-top: 1.25rem; }
+.atc-license code { font-family: 'Fira Code', monospace; color: var(--ink); }
+
+/* === DEMO === */
+.atc-demo { padding: 1rem 0 0; }
+.atc-label {
+font-size: 0.7rem; font-weight: 600; letter-spacing: 0.2em;
+text-transform: uppercase; color: var(--teal);
+padding-top: 2rem; margin-bottom: 0.5rem;
+}
+.atc-label .atc-num { font-family: 'Fira Code', monospace; margin-right: 0.5rem; }
+.atc-heading {
+font-family: 'Newsreader', serif; font-size: 2rem; font-weight: 300;
+margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule);
+letter-spacing: -0.015em;
+}
+.atc-frame {
+position: relative; height: 80vh; min-height: 520px;
+border: 1px solid var(--rule); border-radius: 6px; overflow: hidden;
+box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
+}
+.atc-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; display: block; }
+.atc-note { font-size: 0.82rem; line-height: 1.7; color: var(--muted); max-width: 64ch; margin-top: 1.1rem; }
+.atc-note code { font-family: 'Fira Code', monospace; color: var(--ink); }
+
+/* === RESPONSIVE === */
+@media (max-width: 480px) {
+.atc-width { padding: 0 1.25rem; }
+.atc-hero { padding: 3rem 0 2rem; }
+.atc-frame { height: 70vh; }
+.atc-btn-primary, .atc-btn-secondary { width: 100%; justify-content: center; }
+}
+</style>
+
+<div class="atc-root">
+
+<!-- HERO -->
+<section class="atc-hero">
+<div class="atc-width">
+<span class="atc-kicker">Open Source · Live Demo</span>
+<h1>An agent trace you can <strong>actually see</strong></h1>
+<p class="atc-deck">An infinite, Miro-style canvas that renders an AI agent's run as a node-edge graph — every model call, tool call and retrieval, each scored by an eval. The live demo below is a real run of the <strong>PubCrawl literature agent</strong> answering whether lecanemab slows cognitive decline in early Alzheimer's. <em>Watch it draft an answer that overstates the clinical effect — and the eval catch it.</em></p>
+
+<div class="atc-features">
+<span class="atc-feature">Real PubCrawl agent run</span>
+<span class="atc-feature green">Per-step eval scoring</span>
+<span class="atc-feature slate">Live WebSocket replay</span>
+</div>
+
+<div class="atc-ctas">
+<a class="atc-btn-primary" href="https://github.com/nickjlamb/agent-trace-canvas" target="_blank" rel="noopener">View on GitHub <span aria-hidden="true">→</span></a>
+<a class="atc-btn-secondary" href="https://agent-trace-canvas-production.up.railway.app/" target="_blank" rel="noopener">Open full screen <span aria-hidden="true">→</span></a>
+</div>
+<p class="atc-license"><code>TypeScript</code> · built on React, Konva &amp; WebSockets · real data via PubCrawl over PubMed &amp; ClinicalTrials.gov</p>
+</div>
+</section>
+
+<!-- DEMO -->
+<section class="atc-demo">
+<div class="atc-width">
+<p class="atc-label"><span class="atc-num">01</span>Live demo</p>
+<h2 class="atc-heading">Watch the agent think</h2>
+<div class="atc-frame">
+<iframe src="https://agent-trace-canvas-production.up.railway.app/?embed=1" title="Agent Trace Canvas live demo" loading="lazy"></iframe>
+</div>
+<p class="atc-note">Drag to pan, scroll to zoom, click any step to inspect its input, output and eval. Press <code>Replay live</code> to stream the run over WebSocket. Tool inputs and outputs are real (PubCrawl over PubMed &amp; ClinicalTrials.gov); latency and token figures are illustrative.</p>
+</div>
+</section>
+
+</div>
+<!-- AGENT TRACE CANVAS EMBED — END (paste to here) ─────────────────────────── -->

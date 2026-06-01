@@ -1,18 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Stage, Layer, Rect } from 'react-konva'
 import type Konva from 'konva'
-import { useStore } from '../store'
+import { useStore, MIN_SCALE, MAX_SCALE } from '../store'
 import { TraceNode } from './TraceNode'
 import { TraceEdge } from './TraceEdge'
 
-const MIN_SCALE = 0.25
-const MAX_SCALE = 4
-
 export function CanvasStage() {
   const wrapRef = useRef<HTMLDivElement>(null)
-  const [size, setSize] = useState({ width: 0, height: 0 })
-  const [scale, setScale] = useState(1)
-  const [pos, setPos] = useState({ x: 0, y: 0 })
 
   const nodes = useStore((s) => s.nodes)
   const trace = useStore((s) => s.trace)
@@ -20,28 +14,31 @@ export function CanvasStage() {
   const select = useStore((s) => s.select)
   const streaming = useStore((s) => s.streaming)
   const activeId = useStore((s) => s.activeId)
+  const setViewport = useStore((s) => s.setViewport)
+  const scale = useStore((s) => s.viewport.scale)
+  const x = useStore((s) => s.viewport.x)
+  const y = useStore((s) => s.viewport.y)
+  const width = useStore((s) => s.viewport.width)
+  const height = useStore((s) => s.viewport.height)
 
-  const nodeById = useMemo(() => {
-    const m = new Map(nodes.map((n) => [n.id, n]))
-    return m
-  }, [nodes])
+  const nodeById = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes])
 
   useEffect(() => {
     const el = wrapRef.current
     if (!el) return
     const ro = new ResizeObserver(() => {
-      setSize({ width: el.clientWidth, height: el.clientHeight })
+      setViewport({ width: el.clientWidth, height: el.clientHeight })
     })
     ro.observe(el)
-    setSize({ width: el.clientWidth, height: el.clientHeight })
+    setViewport({ width: el.clientWidth, height: el.clientHeight })
     return () => ro.disconnect()
-  }, [])
+  }, [setViewport])
 
   // Fit the whole trace into view. Once per trace normally; continuously while
   // streaming so the growing graph stays framed as nodes arrive.
   const fittedRun = useRef<string | null>(null)
   useEffect(() => {
-    if (!trace || nodes.length === 0 || size.width === 0 || size.height === 0) return
+    if (!trace || nodes.length === 0 || width === 0 || height === 0) return
     if (!streaming && fittedRun.current === trace.runId) return
 
     const minX = Math.min(...nodes.map((n) => n.x))
@@ -52,19 +49,15 @@ export function CanvasStage() {
     const graphH = maxY - minY
     const pad = 80
 
-    const fit = Math.min(
-      (size.width - pad * 2) / graphW,
-      (size.height - pad * 2) / graphH,
-      1.2,
-    )
+    const fit = Math.min((width - pad * 2) / graphW, (height - pad * 2) / graphH, 1.2)
     const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fit))
-    setScale(newScale)
-    setPos({
-      x: (size.width - graphW * newScale) / 2 - minX * newScale,
-      y: (size.height - graphH * newScale) / 2 - minY * newScale,
+    setViewport({
+      scale: newScale,
+      x: (width - graphW * newScale) / 2 - minX * newScale,
+      y: (height - graphH * newScale) / 2 - minY * newScale,
     })
     if (!streaming) fittedRun.current = trace.runId
-  }, [trace, nodes, size, streaming])
+  }, [trace, nodes, width, height, streaming, setViewport])
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
@@ -73,17 +66,13 @@ export function CanvasStage() {
     const pointer = stage.getPointerPosition()
     if (!pointer) return
 
-    const oldScale = scale
-    const mousePoint = {
-      x: (pointer.x - pos.x) / oldScale,
-      y: (pointer.y - pos.y) / oldScale,
-    }
+    const mousePoint = { x: (pointer.x - x) / scale, y: (pointer.y - y) / scale }
     const factor = 1.08
-    let newScale = e.evt.deltaY > 0 ? oldScale / factor : oldScale * factor
+    let newScale = e.evt.deltaY > 0 ? scale / factor : scale * factor
     newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, newScale))
 
-    setScale(newScale)
-    setPos({
+    setViewport({
+      scale: newScale,
       x: pointer.x - mousePoint.x * newScale,
       y: pointer.y - mousePoint.y * newScale,
     })
@@ -92,23 +81,22 @@ export function CanvasStage() {
   return (
     <div ref={wrapRef} style={{ width: '100%', height: '100%' }}>
       <Stage
-        width={size.width}
-        height={size.height}
-        x={pos.x}
-        y={pos.y}
+        width={width}
+        height={height}
+        x={x}
+        y={y}
         scaleX={scale}
         scaleY={scale}
         draggable
         onWheel={handleWheel}
-        onDragEnd={(e) => setPos({ x: e.target.x(), y: e.target.y() })}
+        onDragEnd={(e) => setViewport({ x: e.target.x(), y: e.target.y() })}
         onMouseDown={(e) => {
-          // click on empty canvas (the Stage itself) deselects
           if (e.target === e.target.getStage()) select(null)
         }}
         style={{ background: '#0d0f14' }}
       >
         <Layer listening={false}>
-          <BackgroundDots width={size.width} height={size.height} scale={scale} pos={pos} />
+          <BackgroundDots width={width} height={height} scale={scale} pos={{ x, y }} />
         </Layer>
         <Layer>
           {trace?.edges.map((e, i) => {
@@ -154,9 +142,9 @@ function BackgroundDots({
   const startY = Math.floor(y0 / gap) * gap
 
   const dots = []
-  for (let x = startX; x < x1; x += gap) {
-    for (let y = startY; y < y1; y += gap) {
-      dots.push(<Rect key={`${x}:${y}`} x={x} y={y} width={2} height={2} fill="#222733" />)
+  for (let xx = startX; xx < x1; xx += gap) {
+    for (let yy = startY; yy < y1; yy += gap) {
+      dots.push(<Rect key={`${xx}:${yy}`} x={xx} y={yy} width={2} height={2} fill="#222733" />)
     }
   }
   return <>{dots}</>

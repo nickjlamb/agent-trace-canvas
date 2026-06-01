@@ -79,9 +79,9 @@ railway up
 - [x] Render agent traces with auto-layout
 - [x] Step inspector + run stats + deep links
 - [x] **Live replay** — stream the run over WebSocket, graph builds in real time
-- [ ] Mini-map + node search
+- [x] Mini-map + node search
 - [ ] PixiJS/WebGL renderer for very large traces
-- [ ] Optional truly-live mode — run a real agent behind your own API key
+- [ ] Live agent mode — run a real agent (Claude + PubMed/ClinicalTrials), rate-limited
 
 ---
 Built by [Nick Lamb](https://github.com/nickjlamb).

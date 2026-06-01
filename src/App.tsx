@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { CanvasStage } from './canvas/CanvasStage'
 import { DetailPanel } from './panel/DetailPanel'
 import { Overlay } from './panel/Overlay'
+import { MiniMap } from './panel/MiniMap'
+import { SearchBox } from './panel/SearchBox'
 import { useStore } from './store'
 import { startReplay } from './live'
 import type { Trace } from './types'
@@ -82,6 +84,8 @@ function App() {
       <main className="app-main">
         <CanvasStage />
         <Overlay />
+        <SearchBox />
+        <MiniMap />
         <DetailPanel />
         {embed && (
           <button className="replay-btn replay-float" onClick={replay} disabled={streaming}>

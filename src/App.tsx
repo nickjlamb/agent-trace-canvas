@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { CanvasStage } from './canvas/CanvasStage'
 import { DetailPanel } from './panel/DetailPanel'
+import { Overlay } from './panel/Overlay'
 import { useStore } from './store'
 import type { Trace } from './types'
 
@@ -29,6 +30,7 @@ function App() {
       </header>
       <main className="app-main">
         <CanvasStage />
+        <Overlay />
         <DetailPanel />
       </main>
     </div>

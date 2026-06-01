@@ -35,6 +35,34 @@ export function CanvasStage() {
     return () => ro.disconnect()
   }, [])
 
+  // Fit the whole trace into view once per trace, after we know the viewport size.
+  const fittedRun = useRef<string | null>(null)
+  useEffect(() => {
+    if (!trace || nodes.length === 0 || size.width === 0 || size.height === 0) return
+    if (fittedRun.current === trace.runId) return
+
+    const minX = Math.min(...nodes.map((n) => n.x))
+    const minY = Math.min(...nodes.map((n) => n.y))
+    const maxX = Math.max(...nodes.map((n) => n.x + n.width))
+    const maxY = Math.max(...nodes.map((n) => n.y + n.height))
+    const graphW = maxX - minX
+    const graphH = maxY - minY
+    const pad = 80
+
+    const fit = Math.min(
+      (size.width - pad * 2) / graphW,
+      (size.height - pad * 2) / graphH,
+      1.2,
+    )
+    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fit))
+    setScale(newScale)
+    setPos({
+      x: (size.width - graphW * newScale) / 2 - minX * newScale,
+      y: (size.height - graphH * newScale) / 2 - minY * newScale,
+    })
+    fittedRun.current = trace.runId
+  }, [trace, nodes, size])
+
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()
     const stage = e.target.getStage()

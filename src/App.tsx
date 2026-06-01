@@ -22,6 +22,11 @@ function App() {
   const [liveNotice, setLiveNotice] = useState<string | null>(null)
   const [liveEnabled, setLiveEnabled] = useState(false)
   const closerRef = useRef<(() => void) | null>(null)
+  // Latest action handlers, so the postMessage listener never goes stale.
+  const actionsRef = useRef<{ liveRun: (q: string) => void; replay: () => void }>({
+    liveRun: () => {},
+    replay: () => {},
+  })
 
   // Embed mode (?embed=1): hide the title bar so the app sits cleanly in an iframe.
   const embed = new URLSearchParams(window.location.search).get('embed') === '1'
@@ -48,6 +53,19 @@ function App() {
       .then((s) => setLiveEnabled(!!s.enabled))
       .catch(() => setLiveEnabled(false))
   }, [])
+
+  // In embed mode the host page owns the controls and drives the canvas via postMessage.
+  useEffect(() => {
+    if (!embed) return
+    const onMessage = (e: MessageEvent) => {
+      const d = e.data
+      if (!d || d.source !== 'atc') return
+      if (d.type === 'run' && typeof d.question === 'string') actionsRef.current.liveRun(d.question)
+      else if (d.type === 'replay') actionsRef.current.replay()
+    }
+    window.addEventListener('message', onMessage)
+    return () => window.removeEventListener('message', onMessage)
+  }, [embed])
 
   // Optional ?replay=1 deep-link auto-starts the live replay on load.
   const didAutoReplay = useRef(false)
@@ -99,6 +117,9 @@ function App() {
     })
   }
 
+  // Keep the postMessage handlers pointing at the current closures.
+  actionsRef.current = { liveRun, replay }
+
   const replayLabel = streaming ? '● streaming…' : '▶ Replay live'
 
   return (
@@ -118,13 +139,9 @@ function App() {
         <CanvasStage />
         <Overlay />
         <MiniMap />
-        {liveEnabled && <LiveBar streaming={streaming} notice={liveNotice} onRun={liveRun} />}
+        {/* Standalone app keeps in-canvas controls; embed is driven by the host page. */}
+        {!embed && liveEnabled && <LiveBar streaming={streaming} notice={liveNotice} onRun={liveRun} />}
         <DetailPanel />
-        {embed && (
-          <button className="replay-btn replay-float" onClick={replay} disabled={streaming}>
-            {replayLabel}
-          </button>
-        )}
       </main>
     </div>
   )

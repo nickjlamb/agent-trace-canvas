@@ -4,8 +4,9 @@ import { DetailPanel } from './panel/DetailPanel'
 import { Overlay } from './panel/Overlay'
 import { MiniMap } from './panel/MiniMap'
 import { SearchBox } from './panel/SearchBox'
+import { LiveBar } from './panel/LiveBar'
 import { useStore } from './store'
-import { startReplay } from './live'
+import { startReplay, startLiveRun } from './live'
 import type { Trace } from './types'
 
 function App() {
@@ -19,6 +20,8 @@ function App() {
   const trace = useStore((s) => s.trace)
 
   const [fullTrace, setFullTrace] = useState<Trace | null>(null)
+  const [liveNotice, setLiveNotice] = useState<string | null>(null)
+  const [liveEnabled, setLiveEnabled] = useState(false)
   const closerRef = useRef<(() => void) | null>(null)
 
   // Embed mode (?embed=1): hide the title bar so the app sits cleanly in an iframe.
@@ -38,6 +41,14 @@ function App() {
   }, [loadTrace, select])
 
   useEffect(() => () => closerRef.current?.(), [])
+
+  // Only show the live UI when the server reports live mode is enabled (API key set).
+  useEffect(() => {
+    fetch('/api/live-status')
+      .then((r) => r.json())
+      .then((s) => setLiveEnabled(!!s.enabled))
+      .catch(() => setLiveEnabled(false))
+  }, [])
 
   // Optional ?replay=1 deep-link auto-starts the live replay on load.
   const didAutoReplay = useRef(false)
@@ -66,6 +77,29 @@ function App() {
     })
   }
 
+  const liveRun = (question: string) => {
+    if (streaming) return
+    setLiveNotice(null)
+    closerRef.current?.()
+    closerRef.current = startLiveRun(question, {
+      onStart: (meta) => startStream(meta),
+      onNode: (node) => addNode(node),
+      onEdge: (edge) => addEdge(edge),
+      onComplete: () => endStream(),
+      onDenied: (reason) => {
+        setLiveNotice(reason)
+        endStream()
+        if (fullTrace) loadTrace(fullTrace)
+      },
+      onError: (msg) => {
+        setLiveNotice('Live run failed — showing the saved trace instead.')
+        console.warn('Live run failed:', msg)
+        endStream()
+        if (fullTrace) loadTrace(fullTrace)
+      },
+    })
+  }
+
   const replayLabel = streaming ? '● streaming…' : '▶ Replay live'
 
   return (
@@ -86,6 +120,7 @@ function App() {
         <Overlay />
         <SearchBox />
         <MiniMap />
+        {liveEnabled && <LiveBar streaming={streaming} notice={liveNotice} onRun={liveRun} />}
         <DetailPanel />
         {embed && (
           <button className="replay-btn replay-float" onClick={replay} disabled={streaming}>

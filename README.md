@@ -62,9 +62,28 @@ The canvas renders any JSON matching [`src/types.ts`](src/types.ts) — see
 [`public/sample-trace.json`](public/sample-trace.json) for a complete example. Drop in a trace
 exported from a real agent run and it renders as-is.
 
+## Live agent mode (optional)
+
+A real agent loop (`server/live-agent.mjs`) runs **Claude Sonnet 4.6** + **PubCrawl** (spawned as a
+local stdio MCP subprocess) and streams genuine steps to the canvas. It is **off unless
+`ANTHROPIC_API_KEY` is set** — without it, `/ws/live` returns `denied`, the "Run live" bar is hidden,
+and the app stays on free replay. Public-safe via rate limits (all env-tunable):
+
+| Env var | Default | |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | — | **The on-switch.** Unset = live mode disabled. |
+| `LIVE_DAILY_CAP` | `60` | Hard global cap on runs/day (spend ceiling) |
+| `LIVE_IP_HOURLY` | `3` | Per-IP runs/hour |
+| `LIVE_CONCURRENCY` | `2` | Max simultaneous runs |
+| `LIVE_MAX_STEPS` | `8` | Max agent steps per run |
+
+```bash
+ANTHROPIC_API_KEY=sk-ant-... npm start   # enable locally; visit / and use "Run live"
+```
+
 ## Deploy (Railway)
 
-This is a static SPA; [`railway.json`](railway.json) builds with Nixpacks and serves `dist/`.
+This is a Node app; [`railway.json`](railway.json) builds with Nixpacks and runs `server/index.mjs`.
 
 ```bash
 npm i -g @railway/cli
@@ -80,8 +99,8 @@ railway up
 - [x] Step inspector + run stats + deep links
 - [x] **Live replay** — stream the run over WebSocket, graph builds in real time
 - [x] Mini-map + node search
+- [x] **Live agent mode** — run a real agent (Claude Sonnet 4.6 + PubCrawl MCP), rate-limited
 - [ ] PixiJS/WebGL renderer for very large traces
-- [ ] Live agent mode — run a real agent (Claude + PubMed/ClinicalTrials), rate-limited
 
 ---
 Built by [Nick Lamb](https://github.com/nickjlamb).

@@ -1,9 +1,9 @@
 import { useState } from 'react'
 
 const EXAMPLES = [
-  'Does semaglutide reduce cardiovascular events?',
-  'Evidence for donanemab in early Alzheimer’s?',
-  'Do SGLT2 inhibitors reduce heart failure hospitalisation?',
+  'Semaglutide & CV events?',
+  'Donanemab in early Alzheimer’s?',
+  'SGLT2 inhibitors & heart failure?',
 ]
 
 export function LiveBar({

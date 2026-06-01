@@ -3,7 +3,6 @@ import { CanvasStage } from './canvas/CanvasStage'
 import { DetailPanel } from './panel/DetailPanel'
 import { Overlay } from './panel/Overlay'
 import { MiniMap } from './panel/MiniMap'
-import { SearchBox } from './panel/SearchBox'
 import { LiveBar } from './panel/LiveBar'
 import { useStore } from './store'
 import { startReplay, startLiveRun } from './live'
@@ -118,7 +117,6 @@ function App() {
       <main className="app-main">
         <CanvasStage />
         <Overlay />
-        <SearchBox />
         <MiniMap />
         {liveEnabled && <LiveBar streaming={streaming} notice={liveNotice} onRun={liveRun} />}
         <DetailPanel />

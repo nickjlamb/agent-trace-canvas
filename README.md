@@ -98,7 +98,7 @@ railway up
 - [x] Render agent traces with auto-layout
 - [x] Step inspector + run stats + deep links
 - [x] **Live replay** — stream the run over WebSocket, graph builds in real time
-- [x] Mini-map + node search
+- [x] Mini-map overview (pan/zoom navigation)
 - [x] **Live agent mode** — run a real agent (Claude Sonnet 4.6 + PubCrawl MCP), rate-limited
 - [ ] PixiJS/WebGL renderer for very large traces
 

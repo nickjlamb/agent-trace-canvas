@@ -26,20 +26,21 @@ canvas. (Latency/token figures are illustrative; the tool I/O is real.)
 
 ## Features
 
-- **Infinite canvas** — pan (drag) and zoom-to-cursor (scroll), rendered to a real `<canvas>` via Konva
-- **Auto-layout** — any trace lays itself out left-to-right (dagre), including branches/fan-in
-- **Eval-aware nodes** — colour-coded by `pass` / `warn` / `fail`, with per-step score
-- **Step inspector** — input, output, eval note, latency, tokens
-- **Run stats** — pass rate, failed count, total tokens, total latency
-- **Live replay** — a WebSocket server streams the run step-by-step; the graph
-  builds in real time with the active step highlighted (`▶ Replay live`, or
-  `?replay=1` to auto-start). Falls back to the static view if the socket drops.
-- **Deep links** — `?node=<id>` opens a specific step (shareable)
+- **Infinite canvas** — pan (drag) and zoom-to-cursor (scroll), rendered to a real `<canvas>` via Konva; auto-layout left-to-right (dagre), including branches/fan-in
+- **Eval-aware nodes** — colour-coded by `pass` / `warn` / `fail` with per-step score; click to inspect input, output, eval note, latency, tokens
+- **Run stats & legend** — pass rate, failed count, total tokens, total latency
+- **Live replay** — a WebSocket server streams the saved run step-by-step; the graph builds in real time with the active step highlighted (`▶ Replay`, or `?replay=1` to auto-start). Falls back to the static view if the socket drops.
+- **Live agent mode** — type a question and a real agent (Claude Sonnet 4.6 + your PubCrawl MCP) runs it, streaming genuine steps + a faithfulness eval. Rate-limited and off unless an API key is set — see [Live agent mode](#live-agent-mode-optional).
+- **Camera modes** — **Follow** (the view tracks the active step at a readable zoom, glides along, then zooms out to the whole trace at the end) or **Fit** (whole graph), toggled live.
+- **Live inspector** — during a run the detail panel follows the active step and reveals the final card when it ends, so content stays readable even on long runs.
+- **Mini-map** — an overview with a draggable viewport box.
+- **Deep links & embedding** — `?node=<id>` opens a step · `?replay=1` auto-starts replay · `?embed=1` hides chrome for iframes. When embedded, the host page can drive the canvas via `postMessage` (`{ source: 'atc', type: 'run' | 'replay' }`).
 
 ## Stack
 
 **Frontend:** React 19 + TypeScript · Vite · **Konva** (`<canvas>`) · Zustand · dagre auto-layout
-**Server:** Node (`http` + **`ws`**) serving the static build and a `/ws` replay stream
+**Server:** Node (`http` + **`ws`**) — serves the static build, a `/ws` replay stream, and a gated `/ws/live` endpoint
+**Live agent:** [`@anthropic-ai/sdk`](https://github.com/anthropics/anthropic-sdk-typescript) (Claude Sonnet 4.6) bridged to [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol) → PubCrawl (`@pharmatools/pubcrawl`) as a local stdio MCP subprocess
 
 ## Run locally
 
@@ -94,12 +95,12 @@ railway up
 
 ## Roadmap
 
-- [x] Pan/zoom infinite canvas
-- [x] Render agent traces with auto-layout
-- [x] Step inspector + run stats + deep links
-- [x] **Live replay** — stream the run over WebSocket, graph builds in real time
-- [x] Mini-map overview (pan/zoom navigation)
+- [x] Pan/zoom infinite canvas with auto-layout
+- [x] Step inspector + run stats + deep links + mini-map
+- [x] **Live replay** — stream the saved run over WebSocket, graph builds in real time
 - [x] **Live agent mode** — run a real agent (Claude Sonnet 4.6 + PubCrawl MCP), rate-limited
+- [x] **Camera modes** — follow-the-agent zoom (with eased glide) / fit-whole-graph, plus a live-following inspector
+- [x] **Embeddable** — `?embed=1` + host-page `postMessage` control
 - [ ] PixiJS/WebGL renderer for very large traces
 
 ---

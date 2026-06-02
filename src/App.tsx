@@ -3,6 +3,7 @@ import { CanvasStage } from './canvas/CanvasStage'
 import { DetailPanel } from './panel/DetailPanel'
 import { Overlay } from './panel/Overlay'
 import { MiniMap } from './panel/MiniMap'
+import { CameraToggle } from './panel/CameraToggle'
 import { LiveBar } from './panel/LiveBar'
 import { useStore } from './store'
 import { startReplay, startLiveRun } from './live'
@@ -138,6 +139,7 @@ function App() {
       <main className="app-main">
         <CanvasStage />
         <Overlay />
+        <CameraToggle />
         <MiniMap />
         {/* Standalone app keeps in-canvas controls; embed is driven by the host page. */}
         {!embed && liveEnabled && <LiveBar streaming={streaming} notice={liveNotice} onRun={liveRun} />}

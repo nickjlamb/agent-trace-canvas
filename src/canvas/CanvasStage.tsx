@@ -14,6 +14,7 @@ export function CanvasStage() {
   const select = useStore((s) => s.select)
   const streaming = useStore((s) => s.streaming)
   const activeId = useStore((s) => s.activeId)
+  const cameraMode = useStore((s) => s.cameraMode)
   const setViewport = useStore((s) => s.setViewport)
   const scale = useStore((s) => s.viewport.scale)
   const x = useStore((s) => s.viewport.x)
@@ -90,28 +91,31 @@ export function CanvasStage() {
     const panelOpen = !!(selectedId || activeId)
     const availW = width - (panelOpen ? PANEL_W : 0)
 
+    // Fit-the-whole-graph target.
+    const fit = Math.min((availW - pad * 2) / graphW, (height - pad * 2) / graphH, 1.2)
+    const fitScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fit))
+    const fitTarget = {
+      scale: fitScale,
+      x: (availW - graphW * fitScale) / 2 - minX * fitScale,
+      y: (height - graphH * fitScale) / 2 - minY * fitScale,
+    }
+
     if (streaming) {
+      if (cameraMode === 'fit') {
+        glideTo(fitTarget) // "normal view" — show the whole graph as it grows
+        return
+      }
       // Camera-follow: readable zoom (fit height), keep the active step ~2/3 across.
       const active = nodes.find((n) => n.id === activeId) ?? nodes[nodes.length - 1]
       const s = Math.min(1, Math.max(0.55, (height - pad * 2) / graphH))
       const cx = active.x + active.width / 2
-      glideTo({
-        scale: s,
-        x: availW * 0.66 - cx * s,
-        y: (height - graphH * s) / 2 - minY * s,
-      })
+      glideTo({ scale: s, x: availW * 0.66 - cx * s, y: (height - graphH * s) / 2 - minY * s })
       return
     }
 
-    const fit = Math.min((availW - pad * 2) / graphW, (height - pad * 2) / graphH, 1.2)
-    const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, fit))
-    glideTo({
-      scale: newScale,
-      x: (availW - graphW * newScale) / 2 - minX * newScale,
-      y: (height - graphH * newScale) / 2 - minY * newScale,
-    })
+    glideTo(fitTarget)
     fittedRun.current = trace.runId
-  }, [trace, nodes, width, height, streaming, selectedId, activeId, glideTo])
+  }, [trace, nodes, width, height, streaming, selectedId, activeId, cameraMode, glideTo])
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault()

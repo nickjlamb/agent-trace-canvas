@@ -13,6 +13,8 @@ interface Viewport {
   height: number
 }
 
+export type CameraMode = 'follow' | 'fit'
+
 interface AppState {
   trace: Trace | null
   nodes: PositionedNode[]
@@ -20,9 +22,11 @@ interface AppState {
   streaming: boolean
   activeId: string | null
   viewport: Viewport
+  cameraMode: CameraMode
   loadTrace: (trace: Trace) => void
   select: (id: string | null) => void
   setViewport: (v: Partial<Viewport>) => void
+  setCameraMode: (m: CameraMode) => void
   focusNode: (id: string) => void
   // Streaming (WebSocket replay)
   startStream: (meta: { runId: string; task: string; source?: string }) => void
@@ -38,6 +42,7 @@ export const useStore = create<AppState>((set) => ({
   streaming: false,
   activeId: null,
   viewport: { scale: 1, x: 0, y: 0, width: 0, height: 0 },
+  cameraMode: 'follow',
 
   loadTrace: (trace) =>
     set({ trace, nodes: layoutTrace(trace), selectedId: null, streaming: false, activeId: null }),
@@ -45,6 +50,8 @@ export const useStore = create<AppState>((set) => ({
   select: (id) => set({ selectedId: id }),
 
   setViewport: (v) => set((s) => ({ viewport: { ...s.viewport, ...v } })),
+
+  setCameraMode: (m) => set({ cameraMode: m }),
 
   focusNode: (id) =>
     set((s) => {

@@ -6,7 +6,7 @@ import { MiniMap } from './panel/MiniMap'
 import { CameraToggle } from './panel/CameraToggle'
 import { LiveBar } from './panel/LiveBar'
 import { useStore } from './store'
-import { startReplay, startLiveRun } from './live'
+import { startReplay, startLiveRun, startLocalReplay } from './live'
 import type { Trace } from './types'
 
 function App() {
@@ -155,6 +155,22 @@ function App() {
   // Keep the postMessage handlers pointing at the current closures.
   actionsRef.current = { liveRun, replay }
 
+  // The header's Replay button replays whatever run is on the canvas (a saved run, or a live run
+  // reopened with ?run=), not always the default one.
+  const replayCurrent = () => {
+    if (streaming) return
+    const current = useStore.getState().trace
+    if (!current || !current.nodes.length) return replay()
+    const copy: Trace = { ...current, nodes: [...current.nodes], edges: [...current.edges] }
+    closerRef.current?.()
+    closerRef.current = startLocalReplay(copy, {
+      onStart: (meta) => startStream(meta),
+      onNode: (node) => addNode(node),
+      onEdge: (edge) => addEdge(edge),
+      onComplete: () => endStream(),
+    })
+  }
+
   const replayLabel = streaming ? '● streaming…' : '▶ Replay live'
 
   return (
@@ -165,7 +181,7 @@ function App() {
             <h1>Agent Trace Canvas</h1>
             <p>{trace ? trace.task : 'Loading trace…'}</p>
           </div>
-          <button className="replay-btn" onClick={() => replay()} disabled={streaming}>
+          <button className="replay-btn" onClick={replayCurrent} disabled={streaming}>
             {replayLabel}
           </button>
         </header>

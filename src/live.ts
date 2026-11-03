@@ -1,4 +1,4 @@
-import type { TraceNode, TraceEdge } from './types'
+import type { Trace, TraceNode, TraceEdge } from './types'
 
 interface ReplayHandlers {
   onStart: (meta: { runId: string; task: string; source?: string }) => void
@@ -75,4 +75,24 @@ export function startReplay(handlers: ReplayHandlers, traceId?: string): () => v
   ws.onmessage = (ev) => dispatch(ev, ws, handlers)
   ws.onerror = () => handlers.onError?.('WebSocket connection failed')
   return () => ws.close()
+}
+
+/** Replay a trace already in the browser (e.g. a reopened live run) with the same pacing as the
+ * server's replay, without a round trip. Returns a closer that cancels the remaining steps. */
+export function startLocalReplay(trace: Trace, handlers: ReplayHandlers): () => void {
+  const timers: ReturnType<typeof setTimeout>[] = []
+  const pace = (n: TraceNode) => Math.min(1400, Math.max(450, n.latencyMs ?? 700))
+  handlers.onStart({ runId: trace.runId, task: trace.task, source: trace.source })
+  let t = 0
+  for (const node of trace.nodes) {
+    timers.push(
+      setTimeout(() => {
+        handlers.onNode(node)
+        for (const edge of trace.edges.filter((e) => e.to === node.id)) handlers.onEdge(edge)
+      }, t),
+    )
+    t += pace(node)
+  }
+  timers.push(setTimeout(() => handlers.onComplete(), t))
+  return () => timers.forEach(clearTimeout)
 }

@@ -1,0 +1,109 @@
+{
+  "runId": "run_txa_crash2_s55",
+  "task": "Does tranexamic acid reduce deaths from bleeding after major trauma?",
+  "source": "Live run recorded 3 Nov 2026 — Claude Sonnet 5.5 + PubCrawl MCP (real tools, real tokens). Step timings were not recorded.",
+  "nodes": [
+    {
+      "id": "n1",
+      "kind": "model_call",
+      "label": "Plan",
+      "input": "Does tranexamic acid reduce deaths from bleeding after major trauma?",
+      "output": "I'll start by searching PubMed for the key evidence.",
+      "tokens": {
+        "in": 102,
+        "out": 121
+      },
+      "eval": {
+        "status": "pass",
+        "score": 0.92,
+        "note": "Planned the approach"
+      }
+    },
+    {
+      "id": "n2",
+      "kind": "tool_call",
+      "label": "search_pubmed",
+      "input": "{\"query\":\"tranexamic acid trauma haemorrhage death CRASH-2 randomised trial\",\"maxResults\":5}",
+      "output": "{\n  \"results\": [\n    {\n      \"pmid\": \"23477634\",\n      \"title\": \"The CRASH-2 trial: a randomised controlled trial and economic evaluation of the effects of tranexamic acid on death, vascular occlusive events and transfusion requirement in bleeding trauma patients.\",\n      \"authors\": [\n        \"Roberts I\",\n        \"Shakur H\",\n        \"Coats T\",\n        \"Hunt B\",\n        \"Balogun E\",\n        \"Barnetson L\",\n        \"Cook L\",\n        \"Kawahara T\",\n        \"Perel P\",\n        \"Prieto-Merino D\",\n        \"Ramos M\",\n        \"Cairns J\",\n        \"Guerriero C\"\n      ],\n      \"journal\": \"Health technology assessment (Winchester, England)\",\n      \"year\": \"2013\",\n      \"doi\": \"10.3310/hta17100\",\n      \"abs",
+      "eval": {
+        "status": "pass",
+        "score": 0.95,
+        "note": "Returned data"
+      }
+    },
+    {
+      "id": "n3",
+      "kind": "retrieval",
+      "label": "get_abstract",
+      "input": "{\"pmid\":\"20554319\"}",
+      "output": "{\n  \"pmid\": \"20554319\",\n  \"title\": \"Effects of tranexamic acid on death, vascular occlusive events, and blood transfusion in trauma patients with significant haemorrhage (CRASH-2): a randomised, placebo-controlled trial.\",\n  \"authors\": [\n    \"CRASH-2 trial collaborators\",\n    \"Shakur Haleema\",\n    \"Roberts Ian\",\n    \"Bautista Ra&#xfa;l\",\n    \"Caballero Jos&#xe9;\",\n    \"Coats Tim\",\n    \"Dewan Yashbir\",\n    \"El-Sayed Hesham\",\n    \"Gogichaishvili Tamar\",\n    \"Gupta Sanjay\",\n    \"Herrera Jorge\",\n    \"Hunt Beverley\",\n    \"Iribhogbe Pius\",\n    \"Izurieta Mario\",\n    \"Khamis Hussein\",\n    \"Komolafe Edward\",\n    \"Marrero Mar&#xed;a-Acelia\",\n    \"Mej&#xed;a-Mantilla Jorge\",\n    \"Miranda Jaime\",\n    \"M",
+      "eval": {
+        "status": "pass",
+        "score": 0.95,
+        "note": "Returned data"
+      }
+    },
+    {
+      "id": "n4",
+      "kind": "retrieval",
+      "label": "get_abstract",
+      "input": "{\"pmid\":\"21439633\"}",
+      "output": "{\n  \"pmid\": \"21439633\",\n  \"title\": \"The importance of early treatment with tranexamic acid in bleeding trauma patients: an exploratory analysis of the CRASH-2 randomised controlled trial.\",\n  \"authors\": [\n    \"CRASH-2 collaborators\",\n    \"Roberts Ian\",\n    \"Shakur Haleema\",\n    \"Afolabi Adefemi\",\n    \"Brohi Karim\",\n    \"Coats Tim\",\n    \"Dewan Yashbir\",\n    \"Gando Satoshi\",\n    \"Guyatt Gordon\",\n    \"Hunt B J\",\n    \"Morales Carlos\",\n    \"Perel Pablo\",\n    \"Prieto-Merino David\",\n    \"Woolley Tom\"\n  ],\n  \"journal\": \"Lancet (London, England)\",\n  \"year\": \"2011\",\n  \"doi\": \"10.1016/S0140-6736(11)60278-X\",\n  \"volume\": \"377\",\n  \"issue\": \"9771\",\n  \"pages\": \"1096-101, 1101.e1-2\",\n  \"abstract_sections\": ",
+      "eval": {
+        "status": "pass",
+        "score": 0.95,
+        "note": "Returned data"
+      }
+    },
+    {
+      "id": "n5",
+      "kind": "model_call",
+      "label": "Answer",
+      "input": "Synthesize a cited answer from the retrieved evidence",
+      "output": "**Yes, tranexamic acid (TXA) reduces deaths from bleeding after major trauma, and it works best when given early.**\n\nIn CRASH-2, a placebo-controlled trial of 20,211 bleeding trauma patients randomised within 8 hours of injury, TXA reduced deaths from bleeding from 5.7% to 4.9% (RR 0.85, 95% CI 0.76-0.96). All-cause mortality also fell, from 16.0% to 14.5% (RR 0.91, 95% CI 0.85-0.97) [20554319].\n\nThe benefit depends on timing, based on a CRASH-2 analysis the investigators labelled exploratory [21439633]:\n- **Within 1 hour of injury:** deaths from bleeding fell from 7.7% to 5.3% (RR 0.68, 95% CI 0.57-0.82).\n- **1 to 3 hours:** the reduction was smaller (RR 0.79, 95% CI 0.64-0.97).\n- **After 3 hours:** deaths from bleeding appeared to increase (RR 1.44, 95% CI 1.12-1.84), so late TXA may be harmful.\n\nThe absolute reduction in all-cause mortality is modest, about 1.5 percentage points. The trial's overall interpretation was that TXA \"safely\" reduced death, but the harm signal after 3 hours means it should be given as early as possible.",
+      "tokens": {
+        "in": 5291,
+        "out": 469
+      },
+      "eval": {
+        "status": "pass",
+        "score": 0.9,
+        "note": "Final answer produced"
+      }
+    },
+    {
+      "id": "n6",
+      "kind": "decision",
+      "label": "Faithfulness check",
+      "input": "Grade the answer against the retrieved evidence",
+      "output": "Every key claim is supported by the retrieved abstracts: the CRASH-2 sample size, the 8-hour window, bleeding deaths 5.7% to 4.9% (RR 0.85, CI 0.76-0.96), all-cause mortality 16.0% to 14.5% (RR 0.91, CI 0.85-0.97), and the timing subgroups (≤1h RR 0.68, 7.7% to 5.3%; 1-3h RR 0.79; >3h RR 1.44). The 'exploratory' label, the 'safely reduced' quote, and the 'could be harmful' caution are all accurate. The ~1.5 point absolute reduction is correct arithmetic (16.0 - 14.5). The only minor liberty is 'works best when given early', a fair paraphrase of the interpretation.",
+      "eval": {
+        "status": "pass",
+        "score": 0.97,
+        "note": "Every key claim is supported by the retrieved abstracts: the CRASH-2 sample size, the 8-hour window, bleeding deaths 5.7% to 4.9% (RR 0.85, CI 0.76-0.96), all-cause mortality 16.0% to 14.5% (RR 0.91, CI 0.85-0.97), and the timing subgroups (≤1h RR 0.68, 7.7% to 5.3%; 1-3h RR 0.79; >3h RR 1.44). The 'exploratory' label, the 'safely reduced' quote, and the 'could be harmful' caution are all accurate. The ~1.5 point absolute reduction is correct arithmetic (16.0 - 14.5). The only minor liberty is 'works best when given early', a fair paraphrase of the interpretation."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2"
+    },
+    {
+      "from": "n2",
+      "to": "n3"
+    },
+    {
+      "from": "n3",
+      "to": "n4"
+    },
+    {
+      "from": "n4",
+      "to": "n5"
+    },
+    {
+      "from": "n5",
+      "to": "n6"
+    }
+  ]
+}

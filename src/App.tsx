@@ -8,6 +8,7 @@ import { LiveBar } from './panel/LiveBar'
 import { useStore } from './store'
 import { startReplay, startLiveRun, startLocalReplay } from './live'
 import type { Trace } from './types'
+import { SAVED_TRACES } from './traces'
 
 function App() {
   const loadTrace = useStore((s) => s.loadTrace)
@@ -39,6 +40,15 @@ function App() {
       .then((t: Trace) => {
         setFullTrace(t)
         const params = new URLSearchParams(window.location.search)
+        const view = params.get('view')
+        if (view && SAVED_TRACES[view]) {
+          // ?view=<id> shows a saved run statically (used by the compare view's panes).
+          fetch(SAVED_TRACES[view])
+            .then((r) => r.json())
+            .then((v: Trace) => loadTrace(v))
+            .catch(() => loadTrace(t))
+          return
+        }
         const runId = params.get('run')
         if (runId) {
           // ?run=<id> reopens a completed live run (e.g. "open full screen" from the embed).

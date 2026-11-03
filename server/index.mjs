@@ -95,6 +95,7 @@ const TRACES = {
   lecanemab: 'sample-trace.json',
   semaglutide: 'traces/semaglutide.json',
   'tranexamic-acid': 'traces/tranexamic-acid.json',
+  'tranexamic-acid-s55': 'traces/tranexamic-acid-s55.json',
 }
 
 async function loadTrace(id = 'lecanemab') {

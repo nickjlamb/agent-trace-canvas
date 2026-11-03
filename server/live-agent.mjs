@@ -55,6 +55,16 @@ export function buildEvidence(messages) {
   return parts.join('\n\n')
 }
 
+// "No thinking" is spelled differently across model generations: 4.x models take
+// { type: 'disabled' }; 5.x models reject that and take { type: 'between_tools' }
+// (no thinking before responding; the short updates written between tool calls come
+// back as thinking blocks).
+export function thinkingOff(model) {
+  return /^claude-(sonnet|opus|haiku)-([5-9]|\d{2,})/.test(model) ? { type: 'between_tools' } : { type: 'disabled' }
+}
+const thinkingTextOf = (content) =>
+  content.filter((b) => b.type === 'thinking' && typeof b.thinking === 'string').map((b) => b.thinking).join('\n').trim()
+
 const SYSTEM = `You are a biomedical literature agent. Answer the user's question ONLY by using the provided PubCrawl tools to find real evidence, then give a concise, cited answer.
 
 Rules:
@@ -133,7 +143,7 @@ export async function runLiveAgent({ question, model, maxSteps, anthropic, onEve
     const resp = await anthropic.messages.create({
       model,
       max_tokens: 1024,
-      thinking: { type: 'disabled' },
+      thinking: thinkingOff(model),
       output_config: { effort: 'low' },
       system,
       tools,
@@ -158,13 +168,14 @@ export async function runLiveAgent({ question, model, maxSteps, anthropic, onEve
       break
     }
 
-    if (step === 0 && text) {
+    const planText = text || thinkingTextOf(resp.content)
+    if (step === 0 && planText) {
       emitNode({
         id: nextId(),
         kind: 'model_call',
         label: 'Plan',
         input: question,
-        output: text.slice(0, 500),
+        output: planText.slice(0, 500),
         tokens: { in: resp.usage.input_tokens, out: resp.usage.output_tokens },
         eval: { status: 'pass', score: 0.92, note: 'Planned the approach' },
       })
@@ -223,7 +234,7 @@ export async function runLiveAgent({ question, model, maxSteps, anthropic, onEve
     const grade = await anthropic.messages.create({
       model,
       max_tokens: 400,
-      thinking: { type: 'disabled' },
+      thinking: thinkingOff(model),
       output_config: { effort: 'low', format: { type: 'json_schema', schema: VERDICT_SCHEMA } },
       system:
         'You grade whether an answer is faithful to retrieved evidence, using ONLY that evidence. pass = every claim supported; warn = partially supported or overstated magnitude; fail = a key claim is unsupported.',

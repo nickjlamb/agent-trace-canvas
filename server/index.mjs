@@ -60,8 +60,16 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms))
 // ---------------- Replay (canned trace) ----------------
 const pace = (node) => Math.min(1400, Math.max(450, node.latencyMs ?? 700))
 
-async function loadTrace() {
-  for (const p of [path.join(DIST, 'sample-trace.json'), path.join(ROOT, 'public', 'sample-trace.json')]) {
+// Saved runs available for replay. Lecanemab is the default (and the app's static fallback).
+const TRACES = {
+  lecanemab: 'sample-trace.json',
+  semaglutide: 'traces/semaglutide.json',
+  'tranexamic-acid': 'traces/tranexamic-acid.json',
+}
+
+async function loadTrace(id = 'lecanemab') {
+  const file = TRACES[id] || TRACES.lecanemab
+  for (const p of [path.join(DIST, file), path.join(ROOT, 'public', file)]) {
     try {
       return JSON.parse(await readFile(p, 'utf8'))
     } catch {
@@ -71,8 +79,14 @@ async function loadTrace() {
   return null
 }
 
-wssReplay.on('connection', async (ws) => {
-  const trace = await loadTrace()
+wssReplay.on('connection', async (ws, req) => {
+  let id = 'lecanemab'
+  try {
+    id = new URL(req.url, 'http://localhost').searchParams.get('trace') || id
+  } catch {
+    /* keep default */
+  }
+  const trace = await loadTrace(id)
   if (!trace) {
     send(ws, { type: 'error', message: 'trace not found' })
     return ws.close()

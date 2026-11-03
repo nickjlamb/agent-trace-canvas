@@ -100,8 +100,7 @@ font-family: 'Newsreader', serif; font-size: 2rem; font-weight: 300;
 margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--rule);
 letter-spacing: -0.015em;
 }
-/* Controls — example (replay) and ask-your-own (live), equal prominence, above the canvas. */
-.atc-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; align-items: stretch; }
+/* Controls — saved-run picker and ask-your-own, above the canvas. */
 .atc-card {
 display: flex; flex-direction: column; gap: 0.55rem;
 background: var(--off-white); border: 1px solid var(--rule);
@@ -155,9 +154,73 @@ box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
 .atc-note { font-size: 0.82rem; line-height: 1.7; color: var(--muted); margin-top: 1.1rem; }
 .atc-note code { font-family: 'Fira Code', monospace; color: var(--ink); }
 
+/* Saved-run picker */
+.atc-runs { margin-bottom: 1rem; }
+.atc-runs-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.4rem 1rem; margin-bottom: 0.6rem; }
+.atc-runs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; }
+.atc-run {
+display: flex; flex-direction: column; gap: 0.5rem; text-align: left; cursor: pointer;
+font-family: 'Inter', sans-serif; color: var(--ink);
+background: var(--off-white); border: 1px solid var(--rule); border-radius: 4px;
+padding: 0.95rem 1.05rem; transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+.atc-run:hover { border-color: var(--teal); background: var(--paper); }
+.atc-run.is-active { border-color: var(--teal); background: var(--paper); box-shadow: inset 3px 0 0 var(--teal); }
+.atc-run:disabled { cursor: default; opacity: 0.6; }
+.atc-run-area { font-family: 'Fira Code', monospace; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+.atc-run-q { font-family: 'Newsreader', serif; font-style: italic; font-size: 0.98rem; line-height: 1.38; flex: 1; }
+.atc-run-eval, .atc-step-badge {
+align-self: flex-start; font-size: 0.68rem; font-weight: 500; line-height: 1.3;
+border-radius: 999px; padding: 0.18rem 0.6rem; border: 1px solid;
+}
+.atc-root .pass { color: #1f6b43; background: #eaf5ee; border-color: #c4e3cf; }
+.atc-root .warn { color: #8a4b08; background: #fdf4e7; border-color: #f1d9b5; }
+.atc-root .fail { color: #a3332a; background: #fbecea; border-color: #f0c9c4; }
+.atc-run-meta { font-size: 0.68rem; color: var(--muted); }
+.atc-run.is-active .atc-run-meta { color: var(--teal); }
+.atc-ask-row { display: flex; gap: 0.75rem; align-items: stretch; }
+.atc-ask-row .atc-card-input { flex: 1; }
+.atc-ask-row .atc-card-run { align-self: stretch; margin-top: 0; white-space: nowrap; }
+.atc-card-ask { margin-bottom: 1.25rem; }
+
+/* Step-by-step summary */
+.atc-summary { margin-top: 1.5rem; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
+.atc-sum-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.atc-summary h3 { font-family: 'Newsreader', serif; font-weight: 400; font-size: 1.4rem; }
+.atc-sum-status { font-family: 'Fira Code', monospace; font-size: 0.65rem; color: var(--teal); letter-spacing: 0.06em; }
+.atc-sum-task { font-family: 'Newsreader', serif; font-style: italic; color: var(--muted); margin: 0.25rem 0 1rem; }
+.atc-sum-list { list-style: none; counter-reset: none; }
+.atc-step {
+display: grid; grid-template-columns: 2rem 1fr; gap: 0.85rem; width: 100%; text-align: left;
+background: none; border: none; border-top: 1px solid var(--rule); padding: 0.85rem 0.25rem;
+cursor: pointer; font-family: 'Inter', sans-serif; color: var(--ink);
+}
+.atc-step:hover { background: var(--off-white); }
+.atc-step-num {
+width: 1.65rem; height: 1.65rem; border-radius: 50%; display: grid; place-items: center;
+font-family: 'Fira Code', monospace; font-size: 0.7rem; font-weight: 500; border: 1px solid;
+}
+.atc-step-top { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.6rem; margin-bottom: 0.3rem; }
+.atc-step-kind { font-family: 'Fira Code', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.atc-step-label { font-weight: 500; font-size: 0.9rem; }
+.atc-step-badge { font-size: 0.64rem; padding: 0.1rem 0.5rem; }
+.atc-step-in { font-family: 'Fira Code', monospace; font-size: 0.72rem; color: var(--ink); background: var(--off-white); border-radius: 3px; padding: 0.3rem 0.5rem; margin: 0.25rem 0; word-break: break-word; }
+.atc-step-out { font-size: 0.82rem; line-height: 1.55; color: #3a4655; }
+.atc-step-note { font-size: 0.78rem; line-height: 1.5; margin-top: 0.3rem; color: var(--muted); }
+.atc-root .atc-step-note.warn, .atc-root .atc-step-note.fail { background: none; border: none; padding: 0; }
+.atc-root .atc-step-note.warn { color: #8a4b08; }
+.atc-root .atc-step-note.fail { color: #a3332a; }
+.atc-step a { color: var(--teal); }
+.atc-sum-foot { font-size: 0.72rem; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 0.6rem; }
+
 /* === RESPONSIVE === */
-@media (max-width: 720px) {
-.atc-controls { grid-template-columns: 1fr; }
+@media (max-width: 860px) {
+.atc-runs-grid { grid-template-columns: 1fr; }
+.atc-run-q { flex: none; }
+}
+@media (max-width: 560px) {
+.atc-ask-row { flex-direction: column; }
+.atc-ask-row .atc-card-run { align-self: flex-start; }
 }
 @media (max-width: 480px) {
 .atc-width { padding: 0 1.25rem; }
@@ -197,27 +260,57 @@ box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
 <p class="atc-label"><span class="atc-num">01</span>Live demo</p>
 <h2 class="atc-heading">Watch the agent think</h2>
 
-<div class="atc-controls">
-<div class="atc-card atc-card-example">
+<div class="atc-runs">
+<div class="atc-runs-head">
 <span class="atc-card-tag">Watch a saved run</span>
-<span class="atc-card-q">“What is the evidence for lecanemab slowing cognitive decline in early Alzheimer's?”</span>
-<button id="atc-example" class="atc-card-run" type="button">▶ Replay</button>
-<span class="atc-card-hint">Watch a finished run play back, step by step.</span>
+<span class="atc-card-hint">Pick one to replay it on the canvas, step by step.</span>
 </div>
+<div class="atc-runs-grid">
+<button class="atc-run is-active" type="button" data-trace="lecanemab" data-run="run_lecanemab_clarityAD">
+<span class="atc-run-area">Neurology · CLARITY AD</span>
+<span class="atc-run-q">“What is the evidence for lecanemab slowing cognitive decline in early Alzheimer's?”</span>
+<span class="atc-run-eval fail">Overstated effect caught</span>
+<span class="atc-run-meta">9 steps · curated run · ▶ Replay</span>
+</button>
+<button class="atc-run" type="button" data-trace="semaglutide" data-run="run_semaglutide_select">
+<span class="atc-run-area">Cardiometabolic · SELECT</span>
+<span class="atc-run-q">“Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?”</span>
+<span class="atc-run-eval pass">Faithfulness check passed</span>
+<span class="atc-run-meta">4 steps · recorded live run · ▶ Replay</span>
+</button>
+<button class="atc-run" type="button" data-trace="tranexamic-acid" data-run="run_txa_crash2">
+<span class="atc-run-area">Trauma · CRASH-2</span>
+<span class="atc-run-q">“Does tranexamic acid reduce deaths from bleeding after major trauma?”</span>
+<span class="atc-run-eval warn">Unsourced claims flagged</span>
+<span class="atc-run-meta">5 steps · recorded live run · ▶ Replay</span>
+</button>
+</div>
+</div>
+
 <div class="atc-card atc-card-ask">
-<span class="atc-card-tag">⚡ Ask your own</span>
+<span class="atc-card-tag">⚡ Or ask your own</span>
+<div class="atc-ask-row">
 <textarea id="atc-q" class="atc-card-input" maxlength="200" rows="2" placeholder="Type a biomedical evidence question…"></textarea>
-<button id="atc-try" class="atc-card-try" type="button" data-q="Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?"><span class="atc-try-label">Try</span><span class="atc-try-q">“Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?”</span></button>
 <button id="atc-run" class="atc-card-run" type="button">Run live →</button>
-<span class="atc-card-hint">Watch it search the literature and answer in real time.</span>
-<p id="atc-notice" class="atc-card-notice" role="status" aria-live="polite" hidden></p>
 </div>
+<button id="atc-try" class="atc-card-try" type="button" data-q="Does vitamin D supplementation prevent fractures in older adults?"><span class="atc-try-label">Try</span><span class="atc-try-q">“Does vitamin D supplementation prevent fractures in older adults?”</span></button>
+<span class="atc-card-hint">A real agent searches the literature and answers in real time.</span>
+<p id="atc-notice" class="atc-card-notice" role="status" aria-live="polite" hidden></p>
 </div>
 
 <div class="atc-frame">
 <iframe id="atc-frame" src="https://agent-trace-canvas-production.up.railway.app/?embed=1" title="Agent Trace Canvas live demo" loading="lazy"></iframe>
 </div>
-<p class="atc-note">Use the controls above to <strong>replay</strong> the saved run or <strong>ask your own</strong> question. On the canvas: drag to pan, scroll to zoom, click any step to inspect its input, output and eval. Replay uses real tool inputs/outputs (PubCrawl over PubMed &amp; ClinicalTrials.gov) with illustrative timings; Run live executes a real <strong>Claude Sonnet 4.6 + PubCrawl</strong> agent.</p>
+<section class="atc-summary" aria-labelledby="atc-sum-h">
+<div class="atc-sum-head">
+<h3 id="atc-sum-h">Step by step</h3>
+<span id="atc-sum-status" class="atc-sum-status"></span>
+</div>
+<p id="atc-sum-task" class="atc-sum-task">Loading the trace…</p>
+<ol id="atc-sum-list" class="atc-sum-list"></ol>
+<p class="atc-sum-foot">Click a step to open it on the canvas.</p>
+</section>
+<p class="atc-note">Use the controls above to <strong>replay</strong> a saved run or <strong>ask your own</strong> question. On the canvas: drag to pan, scroll to zoom, click any step to inspect its input, output and eval. Saved runs replay real tool inputs/outputs (PubCrawl over PubMed &amp; ClinicalTrials.gov): the lecanemab run is curated, with illustrative timings; the other two are recorded live runs. Run live executes a real <strong>Claude Sonnet 4.6 + PubCrawl</strong> agent.</p>
 </div>
 </section>
 
@@ -233,22 +326,110 @@ box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
       frame.contentWindow.postMessage(msg, TARGET);
     }
   }
-  var ex = document.getElementById('atc-example');
-  if (ex) ex.addEventListener('click', function () { post({ type: 'replay' }); });
+
+  // --- Saved-run picker ---
+  var runBtns = Array.prototype.slice.call(document.querySelectorAll('.atc-run'));
+  var streaming = false;
+  function markActive(runId) {
+    runBtns.forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-run') === runId); });
+  }
+  runBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      if (streaming) return;
+      post({ type: 'replay', trace: b.getAttribute('data-trace') });
+    });
+  });
+
+  // --- Ask your own ---
   var input = document.getElementById('atc-q');
   var run = document.getElementById('atc-run');
-  function go() { var q = (input.value || '').trim(); if (q) post({ type: 'run', question: q }); }
+  function go() { var q = (input.value || '').trim(); if (q && !streaming) post({ type: 'run', question: q }); }
   if (run) run.addEventListener('click', go);
+  if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
   var tryBtn = document.getElementById('atc-try');
   if (tryBtn) tryBtn.addEventListener('click', function () { input.value = tryBtn.getAttribute('data-q'); input.focus(); });
-  // Notices from the app (hourly/daily limits, failures) — shown here because the app hides its own controls in embed mode.
+
+  // --- Step-by-step summary, rebuilt from the trace on the canvas ---
+  var list = document.getElementById('atc-sum-list');
+  var taskEl = document.getElementById('atc-sum-task');
+  var statusEl = document.getElementById('atc-sum-status');
+  var KIND = { tool_call: 'Tool call', retrieval: 'Retrieval', model_call: 'Model call', decision: 'Eval' };
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function clip(t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1).trimEnd() + '…' : t; }
+  function plain(t) { return String(t || '').replace(/[*#_`]+/g, '').replace(/\s+/g, ' ').trim(); }
+  // Append text to a node, turning PMIDs into PubMed links.
+  function withPmids(parent, text) {
+    var re = /(PMID[:\s]*|pmid=|"pmid":\s*")(\d{6,9})/gi, last = 0, m;
+    while ((m = re.exec(text))) {
+      parent.appendChild(document.createTextNode(text.slice(last, m.index + m[1].length)));
+      var a = el('a', null, m[2]); a.href = 'https://pubmed.ncbi.nlm.nih.gov/' + m[2] + '/'; a.target = '_blank'; a.rel = 'noopener';
+      a.addEventListener('click', function (e) { e.stopPropagation(); });
+      parent.appendChild(a); last = m.index + m[0].length;
+    }
+    parent.appendChild(document.createTextNode(text.slice(last)));
+    return parent;
+  }
+  function describeInput(n) {
+    var raw = String(n.input || '');
+    try {
+      var o = JSON.parse(raw);
+      if (o.query) return 'PubMed search: ' + o.query;
+      if (o.pmid) return 'PMID ' + o.pmid;
+      if (o.nctId) return o.nctId;
+      return clip(raw, 160);
+    } catch (e) { return clip(raw, 160); }
+  }
+  function describeOutput(n) {
+    var raw = String(n.output || '');
+    if (n.kind === 'tool_call' || n.kind === 'retrieval') {
+      var titles = raw.match(/"title":\s*"([^"]+)"/);
+      if (titles) {
+        var count = (raw.match(/"pmid"/g) || []).length;
+        return (count > 1 ? 'Top hit: ' : '') + titles[1];
+      }
+    }
+    if (n.kind === 'decision' && n.eval && n.eval.note) return '';
+    return clip(plain(raw), 260);
+  }
+  function render(trace, isStreaming) {
+    if (!trace || !list) return;
+    taskEl.textContent = '“' + trace.task + '”';
+    statusEl.textContent = isStreaming ? '● running…' : (trace.nodes.length + ' steps');
+    list.textContent = '';
+    trace.nodes.forEach(function (n, i) {
+      var st = (n.eval && n.eval.status) || 'pass';
+      var li = el('li');
+      var btn = el('button', 'atc-step'); btn.type = 'button';
+      btn.addEventListener('click', function () { post({ type: 'select', id: n.id }); if (frame) frame.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
+      btn.appendChild(el('span', 'atc-step-num ' + st, String(i + 1)));
+      var body = el('span');
+      var top = el('span', 'atc-step-top');
+      top.appendChild(el('span', 'atc-step-kind', KIND[n.kind] || n.kind));
+      top.appendChild(el('span', 'atc-step-label', n.label));
+      if (n.eval) top.appendChild(el('span', 'atc-step-badge ' + st, st.toUpperCase() + ' ' + Number(n.eval.score).toFixed(2)));
+      body.appendChild(top);
+      if (n.kind === 'tool_call' || n.kind === 'retrieval') body.appendChild(withPmids(el('span', 'atc-step-in'), describeInput(n))).style.display = 'block';
+      var out = describeOutput(n);
+      if (out) body.appendChild(withPmids(el('span', 'atc-step-out'), out)).style.display = 'block';
+      if (n.eval && n.eval.note && (st !== 'pass' || n.kind === 'decision')) body.appendChild(el('span', 'atc-step-note ' + st, n.eval.note)).style.display = 'block';
+      btn.appendChild(body); li.appendChild(btn); list.appendChild(li);
+    });
+  }
+
+  // --- Messages from the app ---
   var notice = document.getElementById('atc-notice');
   window.addEventListener('message', function (e) {
-    if (e.origin !== TARGET || !e.data || e.data.source !== 'atc-app' || !notice) return;
-    if (e.data.type === 'live-start') { notice.hidden = true; notice.textContent = ''; }
-    else if (e.data.type === 'live-notice' && e.data.text) { notice.textContent = e.data.text; notice.hidden = false; }
+    if (e.origin !== TARGET || !e.data || e.data.source !== 'atc-app') return;
+    var d = e.data;
+    if (d.type === 'live-start' && notice) { notice.hidden = true; notice.textContent = ''; }
+    else if (d.type === 'live-notice' && d.text && notice) { notice.textContent = d.text; notice.hidden = false; }
+    else if (d.type === 'trace' && d.trace) {
+      streaming = !!d.streaming;
+      runBtns.forEach(function (b) { b.disabled = streaming; });
+      markActive(d.trace.runId);
+      render(d.trace, streaming);
+    }
   });
-  if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
 })();
 </script>
 <!-- AGENT TRACE CANVAS EMBED — END (paste to here) ─────────────────────────── -->

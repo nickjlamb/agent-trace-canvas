@@ -24,7 +24,7 @@ function App() {
   const [liveEnabled, setLiveEnabled] = useState(false)
   const closerRef = useRef<(() => void) | null>(null)
   // Latest action handlers, so the postMessage listener never goes stale.
-  const actionsRef = useRef<{ liveRun: (q: string) => void; replay: () => void }>({
+  const actionsRef = useRef<{ liveRun: (q: string) => void; replay: (traceId?: string) => void }>({
     liveRun: () => {},
     replay: () => {},
   })
@@ -62,7 +62,8 @@ function App() {
       const d = e.data
       if (!d || d.source !== 'atc') return
       if (d.type === 'run' && typeof d.question === 'string') actionsRef.current.liveRun(d.question)
-      else if (d.type === 'replay') actionsRef.current.replay()
+      else if (d.type === 'replay') actionsRef.current.replay(typeof d.trace === 'string' ? d.trace : undefined)
+      else if (d.type === 'select' && typeof d.id === 'string') useStore.getState().focusNode(d.id)
     }
     window.addEventListener('message', onMessage)
     return () => window.removeEventListener('message', onMessage)
@@ -72,14 +73,15 @@ function App() {
   const didAutoReplay = useRef(false)
   useEffect(() => {
     if (!fullTrace || didAutoReplay.current) return
-    if (new URLSearchParams(window.location.search).get('replay') === '1') {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('replay') === '1') {
       didAutoReplay.current = true
-      replay()
+      replay(params.get('trace') || undefined)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullTrace])
 
-  const replay = () => {
+  const replay = (traceId?: string) => {
     if (streaming) return
     closerRef.current?.()
     closerRef.current = startReplay({
@@ -92,8 +94,15 @@ function App() {
         endStream()
         if (fullTrace) loadTrace(fullTrace) // fall back to the static view
       },
-    })
+    }, traceId)
   }
+
+  // Embed mode: keep the host page's step-by-step summary in sync with whatever is on the canvas
+  // (initial trace, a replay as it streams, a live run, or a fallback).
+  useEffect(() => {
+    if (!embed || window.parent === window || !trace) return
+    window.parent.postMessage({ source: 'atc-app', type: 'trace', trace, streaming }, '*')
+  }, [embed, trace, streaming])
 
   // In embed mode the host page owns the controls, so it also needs to show live-run notices
   // (limits, failures) — otherwise a refused run silently falls back to the saved trace.
@@ -142,7 +151,7 @@ function App() {
             <h1>Agent Trace Canvas</h1>
             <p>{trace ? trace.task : 'Loading trace…'}</p>
           </div>
-          <button className="replay-btn" onClick={replay} disabled={streaming}>
+          <button className="replay-btn" onClick={() => replay()} disabled={streaming}>
             {replayLabel}
           </button>
         </header>

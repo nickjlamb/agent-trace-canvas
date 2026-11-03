@@ -1,0 +1,89 @@
+{
+  "runId": "run_txa_crash2",
+  "task": "Does tranexamic acid reduce deaths from bleeding after major trauma?",
+  "source": "Live run recorded 3 Nov 2026 — Claude Sonnet 4.6 + PubCrawl MCP (real tools, real tokens). Step timings were not recorded.",
+  "nodes": [
+    {
+      "id": "n1",
+      "kind": "tool_call",
+      "label": "search_pubmed",
+      "input": "{\"query\":\"tranexamic acid mortality bleeding major trauma\",\"maxResults\":5}",
+      "output": "{\n  \"results\": [\n    {\n      \"pmid\": \"40751727\",\n      \"title\": \"Tranexamic Acid Timing and Mortality Impact After Trauma.\",\n      \"authors\": [\n        \"Ali A\",\n        \"Gruen RL\",\n        \"Bernard SA\",\n        \"Burns B\",\n        \"Forbes AB\",\n        \"Gantner DC\",\n        \"McArthur CJ\",\n        \"Maegele M\",\n        \"Mitra B\",\n        \"PATCH-Trauma trial investigators\"\n      ],\n      \"journal\": \"Annals of emergency medicine\",\n      \"year\": \"2026\",\n      \"doi\": \"10.1016/j.annemergmed.2025.06.609\",\n      \"abstract_snippet\": \"tranexamic acid timing and mortality impact after trauma\"\n    },\n    {\n      \"pmid\": \"25797505\",\n      \"title\": \"Tranexamic acid: a clinical review.\",\n      \"authors\": [\n  ",
+      "eval": {
+        "status": "pass",
+        "score": 0.95,
+        "note": "Returned data"
+      }
+    },
+    {
+      "id": "n2",
+      "kind": "tool_call",
+      "label": "search_pubmed",
+      "input": "{\"query\":\"CRASH-2 trial tranexamic acid trauma mortality randomised controlled\",\"maxResults\":3}",
+      "output": "{\n  \"results\": [\n    {\n      \"pmid\": \"23477634\",\n      \"title\": \"The CRASH-2 trial: a randomised controlled trial and economic evaluation of the effects of tranexamic acid on death, vascular occlusive events and transfusion requirement in bleeding trauma patients.\",\n      \"authors\": [\n        \"Roberts I\",\n        \"Shakur H\",\n        \"Coats T\",\n        \"Hunt B\",\n        \"Balogun E\",\n        \"Barnetson L\",\n        \"Cook L\",\n        \"Kawahara T\",\n        \"Perel P\",\n        \"Prieto-Merino D\",\n        \"Ramos M\",\n        \"Cairns J\",\n        \"Guerriero C\"\n      ],\n      \"journal\": \"Health technology assessment (Winchester, England)\",\n      \"year\": \"2013\",\n      \"doi\": \"10.3310/hta17100\",\n      \"abs",
+      "eval": {
+        "status": "pass",
+        "score": 0.95,
+        "note": "Returned data"
+      }
+    },
+    {
+      "id": "n3",
+      "kind": "retrieval",
+      "label": "get_abstract",
+      "input": "{\"pmid\":\"20554319\"}",
+      "output": "{\n  \"pmid\": \"20554319\",\n  \"title\": \"Effects of tranexamic acid on death, vascular occlusive events, and blood transfusion in trauma patients with significant haemorrhage (CRASH-2): a randomised, placebo-controlled trial.\",\n  \"authors\": [\n    \"CRASH-2 trial collaborators\",\n    \"Shakur Haleema\",\n    \"Roberts Ian\",\n    \"Bautista Ra&#xfa;l\",\n    \"Caballero Jos&#xe9;\",\n    \"Coats Tim\",\n    \"Dewan Yashbir\",\n    \"El-Sayed Hesham\",\n    \"Gogichaishvili Tamar\",\n    \"Gupta Sanjay\",\n    \"Herrera Jorge\",\n    \"Hunt Beverley\",\n    \"Iribhogbe Pius\",\n    \"Izurieta Mario\",\n    \"Khamis Hussein\",\n    \"Komolafe Edward\",\n    \"Marrero Mar&#xed;a-Acelia\",\n    \"Mej&#xed;a-Mantilla Jorge\",\n    \"Miranda Jaime\",\n    \"M",
+      "eval": {
+        "status": "pass",
+        "score": 0.95,
+        "note": "Returned data"
+      }
+    },
+    {
+      "id": "n4",
+      "kind": "model_call",
+      "label": "Answer",
+      "input": "Synthesize a cited answer from the retrieved evidence",
+      "output": "**Yes — tranexamic acid (TXA) significantly reduces deaths from bleeding after major trauma.**\n\nThe landmark **CRASH-2 trial** [PMID: 20554319] — a randomised, placebo-controlled trial across 274 hospitals in 40 countries with **20,211 adult trauma patients** — provided the definitive evidence:\n\n- **All-cause in-hospital mortality** was reduced: 14.5% (TXA) vs. 16.0% (placebo) — **RR 0.91 (95% CI 0.85–0.97; p=0.0035)**.\n- **Death specifically due to bleeding** was reduced: 4.9% vs. 5.7% — **RR 0.85 (95% CI 0.76–0.96; p=0.0077)**.\n- No significant increase in vascular occlusive events (e.g., DVT, PE, MI) was observed, confirming an acceptable safety profile.\n\n**Key caveats:**\n- **Timing is critical**: Subsequent analyses showed that TXA must be given **within 3 hours of injury** to be beneficial; administration after 3 hours may actually increase the risk of death from bleeding.\n- The benefit was observed across diverse, predominantly lower-middle-income settings; generalizability to high-resource trauma systems with rapid surgical care is sometimes debated.\n- TXA does **not** reduce blood transfusion requirements significantly, so its benefit is primarily survival, not transfusion avoidance.\n\n**Bottom line:** TXA (1g IV bolus + 1g IV over 8h) given **early (within 3 hours)** to bleeding trauma patients is a safe, low-cost intervention that saves lives and is now a standard of care in major trauma guidelines worldwide.",
+      "tokens": {
+        "in": 3521,
+        "out": 420
+      },
+      "eval": {
+        "status": "pass",
+        "score": 0.9,
+        "note": "Final answer produced"
+      }
+    },
+    {
+      "id": "n5",
+      "kind": "decision",
+      "label": "Faithfulness check",
+      "input": "Grade the answer against the retrieved evidence",
+      "output": "Most claims are well supported by CRASH-2 (PMID 20554319). However, the claim about timing (3-hour cutoff) and that late TXA 'may increase the risk of death from bleeding' is not supported by the provided evidence — it comes from a subgroup analysis not included in the retrieved abstracts. Also, the claim that TXA does not significantly reduce blood transfusion requirements is not supported by the provided evidence (the abstract does not report transfusion outcomes).",
+      "eval": {
+        "status": "warn",
+        "score": 0.78,
+        "note": "Most claims are well supported by CRASH-2 (PMID 20554319). However, the claim about timing (3-hour cutoff) and that late TXA 'may increase the risk of death from bleeding' is not supported by the provided evidence — it comes from a subgroup analysis not included in the retrieved abstracts. Also, the claim that TXA does not significantly reduce blood transfusion requirements is not supported by the provided evidence (the abstract does not report transfusion outcomes)."
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from": "n1",
+      "to": "n2"
+    },
+    {
+      "from": "n2",
+      "to": "n3"
+    },
+    {
+      "from": "n3",
+      "to": "n4"
+    },
+    {
+      "from": "n4",
+      "to": "n5"
+    }
+  ]
+}

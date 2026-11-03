@@ -64,10 +64,10 @@ function dispatch(ev: MessageEvent, ws: WebSocket, handlers: ReplayHandlers) {
 }
 
 /** Open a WebSocket to the replay endpoint and dispatch streamed steps. Returns a closer. */
-export function startReplay(handlers: ReplayHandlers): () => void {
+export function startReplay(handlers: ReplayHandlers, traceId?: string): () => void {
   let ws: WebSocket
   try {
-    ws = new WebSocket(wsUrl('/ws'))
+    ws = new WebSocket(wsUrl(traceId ? `/ws?trace=${encodeURIComponent(traceId)}` : '/ws'))
   } catch {
     handlers.onError?.('Could not open WebSocket')
     return () => {}

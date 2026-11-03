@@ -1,5 +1,6 @@
 import http from 'node:http'
 import { readFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import handler from 'serve-handler'
@@ -33,6 +34,21 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'application/json' })
     res.end(JSON.stringify({ enabled: HAS_KEY, model: LIVE_MODEL, dailyCap: DAILY_CAP }))
     return
+  }
+  // Caching: hashed build assets never change, so cache them for a year; everything else
+  // (index.html and the SPA fallback) must be revalidated, or a browser that cached an old
+  // index.html keeps requesting asset hashes that no longer exist after a deploy.
+  const pathname = (req.url || '/').split('?')[0]
+  if (pathname.startsWith('/assets/')) {
+    // A missing hashed asset is a real 404, never the SPA's index.html served as JavaScript.
+    if (!existsSync(path.join(DIST, decodeURIComponent(pathname)))) {
+      res.writeHead(404, { 'content-type': 'text/plain', 'cache-control': 'no-store' })
+      res.end('Not found')
+      return
+    }
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
+  } else {
+    res.setHeader('Cache-Control', 'no-cache')
   }
   handler(req, res, {
     public: DIST,

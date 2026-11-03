@@ -95,9 +95,18 @@ function App() {
     })
   }
 
+  // In embed mode the host page owns the controls, so it also needs to show live-run notices
+  // (limits, failures) — otherwise a refused run silently falls back to the saved trace.
+  const notifyHost = (type: 'live-start' | 'live-notice', text?: string) => {
+    if (embed && window.parent !== window) {
+      window.parent.postMessage({ source: 'atc-app', type, text }, '*')
+    }
+  }
+
   const liveRun = (question: string) => {
     if (streaming) return
     setLiveNotice(null)
+    notifyHost('live-start')
     closerRef.current?.()
     closerRef.current = startLiveRun(question, {
       onStart: (meta) => startStream(meta),
@@ -106,11 +115,13 @@ function App() {
       onComplete: () => endStream(),
       onDenied: (reason) => {
         setLiveNotice(reason)
+        notifyHost('live-notice', reason)
         endStream()
         if (fullTrace) loadTrace(fullTrace)
       },
       onError: (msg) => {
         setLiveNotice('Live run failed — showing the saved trace instead.')
+        notifyHost('live-notice', 'Live run failed — showing the saved trace instead.')
         console.warn('Live run failed:', msg)
         endStream()
         if (fullTrace) loadTrace(fullTrace)

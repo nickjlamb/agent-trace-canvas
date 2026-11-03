@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { randomUUID } from 'node:crypto'
 import handler from 'serve-handler'
 import { WebSocketServer } from 'ws'
 import Anthropic from '@anthropic-ai/sdk'
@@ -30,6 +31,13 @@ const anthropic = HAS_KEY ? new Anthropic() : null
 
 // --- Static file serving (SPA fallback to index.html) ---
 const server = http.createServer((req, res) => {
+  const runMatch = /^\/api\/run\/(live_[a-z0-9]{16})$/.exec((req.url || '').split('?')[0])
+  if (runMatch) {
+    const saved = getSavedRun(runMatch[1])
+    res.writeHead(saved ? 200 : 404, { 'content-type': 'application/json', 'cache-control': 'no-store' })
+    res.end(JSON.stringify(saved || { error: 'This live run has expired or never existed.' }))
+    return
+  }
   if (req.url === '/api/live-status') {
     res.writeHead(200, { 'content-type': 'application/json' })
     res.end(JSON.stringify({ enabled: HAS_KEY, model: LIVE_MODEL, dailyCap: DAILY_CAP }))
@@ -123,6 +131,27 @@ wssReplay.on('connection', async (ws, req) => {
   send(ws, { type: 'run_complete' })
 })
 
+// ---------------- Saved live runs (so "full screen" can reopen one) ----------------
+// Completed live runs are kept in memory for a while under an unguessable id; they are lost on
+// redeploy, which is fine for a demo.
+const SAVED_RUN_TTL_MS = Number(process.env.LIVE_SAVED_RUN_TTL_MS || 2 * 60 * 60 * 1000)
+const MAX_SAVED_RUNS = Number(process.env.LIVE_MAX_SAVED_RUNS || 200)
+const savedRuns = new Map() // runId -> { trace, at }
+
+function pruneSavedRuns() {
+  const now = Date.now()
+  for (const [id, r] of savedRuns) if (now - r.at > SAVED_RUN_TTL_MS) savedRuns.delete(id)
+  while (savedRuns.size > MAX_SAVED_RUNS) savedRuns.delete(savedRuns.keys().next().value)
+}
+function saveRun(trace) {
+  savedRuns.set(trace.runId, { trace, at: Date.now() })
+  pruneSavedRuns()
+}
+function getSavedRun(id) {
+  pruneSavedRuns()
+  return savedRuns.get(id)?.trace || null
+}
+
 // ---------------- Live (real agent, rate-limited) ----------------
 let dayKey = new Date().toISOString().slice(0, 10)
 let dayCount = 0
@@ -171,21 +200,23 @@ wssLive.on('connection', (ws, req) => {
     hits.push(Date.now())
     ipHits.set(ip, hits)
 
-    const runId = 'live_' + Date.now().toString(36)
+    const runId = 'live_' + randomUUID().replace(/-/g, '').slice(0, 16)
+    const source = `Live run — ${LIVE_MODEL_NAME} + PubCrawl MCP (real tools, real tokens).`
+    const trace = { runId, task: question, source, nodes: [], edges: [] }
     try {
-      send(ws, {
-        type: 'run_start',
-        runId,
-        task: question,
-        source: `Live run — ${LIVE_MODEL_NAME} + PubCrawl MCP (real tools, real tokens).`,
-      })
+      send(ws, { type: 'run_start', runId, task: question, source })
       await runLiveAgent({
         question,
         model: LIVE_MODEL,
         maxSteps: MAX_STEPS,
         anthropic,
-        onEvent: (evt) => send(ws, evt),
+        onEvent: (evt) => {
+          if (evt.type === 'node') trace.nodes.push(evt.node)
+          else if (evt.type === 'edge') trace.edges.push(evt.edge)
+          send(ws, evt)
+        },
       })
+      if (trace.nodes.length) saveRun(trace)
     } catch (e) {
       send(ws, { type: 'error', message: 'Live run failed: ' + (e?.message || 'unknown error') })
     } finally {

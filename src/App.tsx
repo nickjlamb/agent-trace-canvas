@@ -38,8 +38,22 @@ function App() {
       .then((r) => r.json())
       .then((t: Trace) => {
         setFullTrace(t)
+        const params = new URLSearchParams(window.location.search)
+        const runId = params.get('run')
+        if (runId) {
+          // ?run=<id> reopens a completed live run (e.g. "open full screen" from the embed).
+          loadTrace(t)
+          fetch(`/api/run/${encodeURIComponent(runId)}`)
+            .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+            .then((live: Trace) => {
+              loadTrace(live)
+              if (live.nodes.length) select(live.nodes[live.nodes.length - 1].id)
+            })
+            .catch(() => setLiveNotice('That live run has expired, so a saved run is shown instead.'))
+          return
+        }
         loadTrace(t)
-        const wanted = new URLSearchParams(window.location.search).get('node')
+        const wanted = params.get('node')
         if (wanted && t.nodes.some((n) => n.id === wanted)) select(wanted)
       })
       .catch((err) => console.error('Failed to load trace', err))

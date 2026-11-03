@@ -346,11 +346,13 @@ font-family: 'Fira Code', monospace; font-size: 0.7rem; font-weight: 500; border
       b.classList.toggle('is-active', on);
       if (on) traceId = b.getAttribute('data-trace');
     });
-    // Full screen opens the saved run on the canvas; a visitor's own live run can't be carried
-    // across without re-running it, so that falls back to the default view.
+    // Full screen opens whatever is on the canvas: a saved run is replayed there, and a finished
+    // live run is reopened from the server (kept for two hours) rather than run again.
     if (full) {
-      full.href = TARGET + '/' + (traceId ? '?trace=' + encodeURIComponent(traceId) + '&replay=1' : '');
-      full.firstChild.nodeValue = traceId ? 'Open this run full screen ' : 'Open the canvas full screen ';
+      var live = !traceId && /^live_[a-z0-9]{16}$/.test(runId || '') && !streaming;
+      full.href = TARGET + '/' + (traceId ? '?trace=' + encodeURIComponent(traceId) + '&replay=1'
+        : live ? '?run=' + encodeURIComponent(runId) : '');
+      full.firstChild.nodeValue = traceId || live ? 'Open this run full screen ' : 'Open the canvas full screen ';
     }
   }
   runBtns.forEach(function (b) {

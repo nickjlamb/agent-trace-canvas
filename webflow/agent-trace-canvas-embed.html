@@ -119,7 +119,9 @@ letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal);
 width: 100%; font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--ink);
 background: var(--paper); border: 1px solid var(--rule); border-radius: 4px;
 padding: 0.6rem 0.75rem; outline: none;
+line-height: 1.45; resize: none; display: block;
 }
+.atc-card-input::placeholder { color: var(--muted); }
 .atc-card-input:focus { border-color: var(--teal); }
 .atc-card-run {
 align-self: flex-start; margin-top: auto; /* push to the bottom so both cards' CTAs align */
@@ -129,10 +131,17 @@ padding: 0.6rem 1.1rem; cursor: pointer; transition: background 0.2s;
 }
 .atc-card-run:hover { background: #0a5c5f; }
 .atc-card-try {
-align-self: flex-start; font-family: 'Inter', sans-serif; font-size: 0.72rem; font-weight: 500;
-color: var(--teal); background: none; border: none; padding: 0; cursor: pointer;
+display: flex; align-items: baseline; gap: 0.5rem; width: 100%; text-align: left;
+font-family: 'Inter', sans-serif; background: var(--paper); cursor: pointer;
+border: 1px dashed var(--rule); border-radius: 4px; padding: 0.45rem 0.7rem;
+transition: border-color 0.2s, background 0.2s;
 }
-.atc-card-try:hover { text-decoration: underline; }
+.atc-card-try:hover { border-color: var(--teal); background: var(--teal-light); }
+.atc-try-label {
+flex-shrink: 0; font-family: 'Fira Code', monospace; font-size: 0.6rem; font-weight: 600;
+letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal);
+}
+.atc-try-q { font-family: 'Newsreader', serif; font-style: italic; font-size: 0.92rem; line-height: 1.4; color: var(--ink); }
 .atc-card-notice {
 font-size: 0.75rem; line-height: 1.45; color: #8a4b08;
 background: #fdf4e7; border: 1px solid #f1d9b5; border-radius: 4px; padding: 0.5rem 0.65rem;
@@ -197,8 +206,8 @@ box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
 </div>
 <div class="atc-card atc-card-ask">
 <span class="atc-card-tag">⚡ Ask your own</span>
-<input id="atc-q" class="atc-card-input" maxlength="200" placeholder="e.g. Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?" />
-<button id="atc-try" class="atc-card-try" type="button" data-q="Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?">Try this example →</button>
+<textarea id="atc-q" class="atc-card-input" maxlength="200" rows="2" placeholder="Type a biomedical evidence question…"></textarea>
+<button id="atc-try" class="atc-card-try" type="button" data-q="Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?"><span class="atc-try-label">Try</span><span class="atc-try-q">“Does semaglutide reduce cardiovascular events in people with obesity but no diabetes?”</span></button>
 <button id="atc-run" class="atc-card-run" type="button">Run live →</button>
 <span class="atc-card-hint">Watch it search the literature and answer in real time.</span>
 <p id="atc-notice" class="atc-card-notice" role="status" aria-live="polite" hidden></p>
@@ -239,7 +248,7 @@ box-shadow: 0 18px 50px rgba(15,26,46,0.10); background: #0d0f14;
     if (e.data.type === 'live-start') { notice.hidden = true; notice.textContent = ''; }
     else if (e.data.type === 'live-notice' && e.data.text) { notice.textContent = e.data.text; notice.hidden = false; }
   });
-  if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') go(); });
+  if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } });
 })();
 </script>
 <!-- AGENT TRACE CANVAS EMBED — END (paste to here) ─────────────────────────── -->

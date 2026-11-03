@@ -30,7 +30,7 @@ canvas. (Latency/token figures are illustrative; the tool I/O is real.)
 - **Eval-aware nodes** — colour-coded by `pass` / `warn` / `fail` with per-step score; click to inspect input, output, eval note, latency, tokens
 - **Run stats & legend** — pass rate, failed count, total tokens, total latency
 - **Live replay** — a WebSocket server streams the saved run step-by-step; the graph builds in real time with the active step highlighted (`▶ Replay`, or `?replay=1` to auto-start). Falls back to the static view if the socket drops.
-- **Live agent mode** — type a question and a real agent (Claude Sonnet 4.6 + your PubCrawl MCP) runs it, streaming genuine steps + a faithfulness eval. Rate-limited and off unless an API key is set — see [Live agent mode](#live-agent-mode-optional).
+- **Live agent mode** — type a question and a real agent (Claude Sonnet 5.5 + your PubCrawl MCP) runs it, streaming genuine steps + a faithfulness eval. Rate-limited and off unless an API key is set — see [Live agent mode](#live-agent-mode-optional).
 - **Camera modes** — **Follow** (the view tracks the active step at a readable zoom, glides along, then zooms out to the whole trace at the end) or **Fit** (whole graph), toggled live.
 - **Live inspector** — during a run the detail panel follows the active step and reveals the final card when it ends, so content stays readable even on long runs.
 - **Mini-map** — an overview with a draggable viewport box.
@@ -40,7 +40,7 @@ canvas. (Latency/token figures are illustrative; the tool I/O is real.)
 
 **Frontend:** React 19 + TypeScript · Vite · **Konva** (`<canvas>`) · Zustand · dagre auto-layout
 **Server:** Node (`http` + **`ws`**) — serves the static build, a `/ws` replay stream, and a gated `/ws/live` endpoint
-**Live agent:** [`@anthropic-ai/sdk`](https://github.com/anthropics/anthropic-sdk-typescript) (Claude Sonnet 4.6) bridged to [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol) → PubCrawl (`@pharmatools/pubcrawl`) as a local stdio MCP subprocess
+**Live agent:** [`@anthropic-ai/sdk`](https://github.com/anthropics/anthropic-sdk-typescript) (Claude Sonnet 5.5) bridged to [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol) → PubCrawl (`@pharmatools/pubcrawl`) as a local stdio MCP subprocess
 
 ## Run locally
 
@@ -65,7 +65,7 @@ exported from a real agent run and it renders as-is.
 
 ## Live agent mode (optional)
 
-A real agent loop (`server/live-agent.mjs`) runs **Claude Sonnet 4.6** + **PubCrawl** (spawned as a
+A real agent loop (`server/live-agent.mjs`) runs **Claude Sonnet 5.5** + **PubCrawl** (spawned as a
 local stdio MCP subprocess) and streams genuine steps to the canvas. It is **off unless
 `ANTHROPIC_API_KEY` is set** — without it, `/ws/live` returns `denied`, the "Run live" bar is hidden,
 and the app stays on free replay. Public-safe via rate limits (all env-tunable):
@@ -98,7 +98,7 @@ railway up
 - [x] Pan/zoom infinite canvas with auto-layout
 - [x] Step inspector + run stats + deep links + mini-map
 - [x] **Live replay** — stream the saved run over WebSocket, graph builds in real time
-- [x] **Live agent mode** — run a real agent (Claude Sonnet 4.6 + PubCrawl MCP), rate-limited
+- [x] **Live agent mode** — run a real agent (Claude Sonnet 5.5 + PubCrawl MCP), rate-limited
 - [x] **Camera modes** — follow-the-agent zoom (with eased glide) / fit-whole-graph, plus a live-following inspector
 - [x] **Embeddable** — `?embed=1` + host-page `postMessage` control
 - [ ] PixiJS/WebGL renderer for very large traces

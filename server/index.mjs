@@ -13,7 +13,13 @@ const DIST = path.join(ROOT, 'dist')
 const PORT = process.env.PORT || 3000
 
 // --- Live-mode config (all env-tunable). Live mode is OFF unless a key is set. ---
-const LIVE_MODEL = 'claude-sonnet-4-6'
+// Pinned model for live runs; override with LIVE_MODEL without a code change.
+const LIVE_MODEL = process.env.LIVE_MODEL || 'claude-sonnet-5-5'
+// 'claude-sonnet-5-5' -> 'Claude Sonnet 5.5' for the run's provenance line.
+const LIVE_MODEL_NAME = LIVE_MODEL.replace(/^claude-/, '')
+  .replace(/-(\d+)-(\d+)(-\d{8})?$/, ' $1.$2')
+  .replace(/(^|-)(\w)/g, (_, sep, c) => (sep ? ' ' : '') + c.toUpperCase())
+  .replace(/^/, 'Claude ')
 const HAS_KEY = !!process.env.ANTHROPIC_API_KEY
 const DAILY_CAP = Number(process.env.LIVE_DAILY_CAP || 60)
 const IP_HOURLY = Number(process.env.LIVE_IP_HOURLY || 3)
@@ -155,7 +161,7 @@ wssLive.on('connection', (ws, req) => {
         type: 'run_start',
         runId,
         task: question,
-        source: 'Live run — Claude Sonnet 4.6 + PubCrawl MCP (real tools, real tokens).',
+        source: `Live run — ${LIVE_MODEL_NAME} + PubCrawl MCP (real tools, real tokens).`,
       })
       await runLiveAgent({
         question,

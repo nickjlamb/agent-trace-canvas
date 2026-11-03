@@ -18,6 +18,43 @@ const TOOL_KIND = {
 }
 const ALLOWED = Object.keys(TOOL_KIND)
 
+// Evidence for the faithfulness grader. Previously every tool result was joined in call order and
+// cut at 6,000 chars, so long search listings (titles only) filled the budget and the fetched
+// abstracts — where the figures are — never reached the grader. Now fetched documents go first
+// with a generous per-item cap, and search listings are trimmed to whatever budget remains.
+const DOC_TOOLS = new Set(['get_abstract', 'get_full_text', 'get_trial', 'get_smpc', 'get_uspi', 'compare_labels'])
+const EVIDENCE_BUDGET = 14000
+const DOC_CAP = 4000
+const LISTING_CAP = 1200
+
+export function buildEvidence(messages) {
+  const names = new Map()
+  for (const m of messages) {
+    if (m.role === 'assistant' && Array.isArray(m.content)) {
+      for (const b of m.content) if (b.type === 'tool_use') names.set(b.id, b.name)
+    }
+  }
+  const results = messages
+    .filter((m) => m.role === 'user' && Array.isArray(m.content))
+    .flatMap((m) => m.content)
+    .filter((c) => c.type === 'tool_result' && !c.is_error && typeof c.content === 'string' && c.content.trim())
+    .map((c) => ({ name: names.get(c.tool_use_id) || 'tool', text: c.content }))
+  const docs = results.filter((r) => DOC_TOOLS.has(r.name))
+  const listings = results.filter((r) => !DOC_TOOLS.has(r.name))
+  const parts = []
+  let used = 0
+  for (const [items, cap] of [[docs, DOC_CAP], [listings, LISTING_CAP]]) {
+    for (const r of items) {
+      const room = EVIDENCE_BUDGET - used
+      if (room <= 200) break
+      const chunk = `[${r.name}]\n${r.text.slice(0, Math.min(cap, room))}`
+      parts.push(chunk)
+      used += chunk.length
+    }
+  }
+  return parts.join('\n\n')
+}
+
 const SYSTEM = `You are a biomedical literature agent. Answer the user's question ONLY by using the provided PubCrawl tools to find real evidence, then give a concise, cited answer.
 
 Rules:
@@ -182,13 +219,7 @@ export async function runLiveAgent({ question, model, maxSteps, anthropic, onEve
 
   // Faithfulness eval as a decision node (real second model call).
   try {
-    const evidence = messages
-      .filter((m) => m.role === 'user' && Array.isArray(m.content))
-      .flatMap((m) => m.content)
-      .filter((c) => c.type === 'tool_result')
-      .map((c) => (typeof c.content === 'string' ? c.content : ''))
-      .join('\n')
-      .slice(0, 6000)
+    const evidence = buildEvidence(messages)
     const grade = await anthropic.messages.create({
       model,
       max_tokens: 400,

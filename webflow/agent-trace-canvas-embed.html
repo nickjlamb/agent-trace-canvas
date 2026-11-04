@@ -234,6 +234,12 @@ font-family: 'Fira Code', monospace; font-size: 0.7rem; font-weight: 500; border
 .atc-frame { height: 70vh; }
 .atc-btn-primary, .atc-btn-secondary { width: 100%; justify-content: center; }
 }
+
+/* === COMPARE === */
+.atc-cmp-intro { font-size: 0.95rem; line-height: 1.7; color: var(--ink); max-width: 46rem; margin-bottom: 1rem; }
+.atc-cmp-frame { height: 100vh; min-height: 820px; max-height: 1000px; }
+.atc-cmp-caveat { font-size: 0.82rem; line-height: 1.7; color: var(--muted); margin-top: 1.1rem; padding-bottom: 2rem; }
+@media (max-width: 860px) { .atc-cmp-frame { height: 85vh; min-height: 560px; } }
 </style>
 
 <div class="atc-root">
@@ -319,6 +325,22 @@ font-family: 'Fira Code', monospace; font-size: 0.7rem; font-weight: 500; border
 <p class="atc-sum-foot">Click a step to open it on the canvas.</p>
 </section>
 <p class="atc-note">Use the controls above to <strong>replay</strong> a saved run or <strong>ask your own</strong> question. On the canvas: drag to pan, scroll to zoom, click any step to inspect its input, output and eval. Saved runs replay real tool inputs/outputs (PubCrawl over PubMed &amp; ClinicalTrials.gov): the lecanemab run is curated, with illustrative timings; the other two are live runs recorded on Claude Sonnet 4.6. Run live executes a real <strong>Claude Sonnet 5.5 + PubCrawl</strong> agent.</p>
+</div>
+</section>
+
+<!-- 02 COMPARE TWO RUNS -->
+<section class="atc-demo atc-compare">
+<div class="atc-width">
+<p class="atc-label"><span class="atc-num">02</span>Compare two runs</p>
+<h2 class="atc-heading">Same question, two models</h2>
+<p class="atc-cmp-intro">The tranexamic acid question, asked once on <strong>Claude Sonnet 4.6</strong> and once on <strong>Claude Sonnet 5.5</strong>. The strip at the top lists what changed: steps, tokens, the searches each run made, which papers each one fetched, and how each answer scored. The 4.6 run never fetched the CRASH-2 timing analysis, so its claim about treatment timing went unsupported and the answer was flagged WARN. The 5.5 run fetched it and passed.</p>
+<div class="atc-frame-bar">
+<a class="atc-full" href="https://agent-trace-canvas-production.up.railway.app/?compare=tranexamic-acid,tranexamic-acid-s55" target="_blank" rel="noopener">Open the comparison full screen <span aria-hidden="true">↗</span></a>
+</div>
+<div class="atc-frame atc-cmp-frame">
+<iframe src="https://agent-trace-canvas-production.up.railway.app/?compare=tranexamic-acid,tranexamic-acid-s55&amp;embed=1" title="Agent Trace Canvas: two runs compared" loading="lazy"></iframe>
+</div>
+<p class="atc-cmp-caveat">One run per model, so this shows a difference, not a measured effect. Each answer was scored by the same faithfulness check, run on that answer's own model. Repeat runs come with <strong>Groundhog</strong>, my agent-reliability benchmark.</p>
 </div>
 </section>
 

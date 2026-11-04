@@ -192,6 +192,11 @@ border-radius: 999px; padding: 0.18rem 0.6rem; border: 1px solid;
 /* Step-by-step summary */
 .atc-summary { margin-top: 1.5rem; border-top: 1px solid var(--rule); padding-top: 1.25rem; }
 .atc-sum-head { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+.atc-summary > summary { cursor: pointer; list-style: none; }
+.atc-summary > summary::-webkit-details-marker { display: none; }
+.atc-sum-head h3::before { content: '▸'; display: inline-block; width: 1rem; color: var(--teal); transition: transform 0.2s; }
+.atc-summary[open] .atc-sum-head h3::before { transform: rotate(90deg); }
+.atc-sum-head:hover h3 { color: var(--teal); }
 .atc-summary h3 { font-family: 'Newsreader', serif; font-weight: 400; font-size: 1.4rem; }
 .atc-sum-status { font-family: 'Fira Code', monospace; font-size: 0.65rem; color: var(--teal); letter-spacing: 0.06em; }
 .atc-sum-task { font-family: 'Newsreader', serif; font-style: italic; color: var(--muted); margin: 0.25rem 0 1rem; }
@@ -315,15 +320,15 @@ font-family: 'Fira Code', monospace; font-size: 0.7rem; font-weight: 500; border
 <div class="atc-frame">
 <iframe id="atc-frame" src="https://agent-trace-canvas-production.up.railway.app/?embed=1" title="Agent Trace Canvas live demo" loading="lazy"></iframe>
 </div>
-<section class="atc-summary" aria-labelledby="atc-sum-h">
-<div class="atc-sum-head">
+<details class="atc-summary">
+<summary class="atc-sum-head">
 <h3 id="atc-sum-h">Step by step</h3>
 <span id="atc-sum-status" class="atc-sum-status"></span>
-</div>
+</summary>
 <p id="atc-sum-task" class="atc-sum-task">Loading the trace…</p>
 <ol id="atc-sum-list" class="atc-sum-list"></ol>
 <p class="atc-sum-foot">Click a step to open it on the canvas.</p>
-</section>
+</details>
 <p class="atc-note">Use the controls above to <strong>replay</strong> a saved run or <strong>ask your own</strong> question. On the canvas: drag to pan, scroll to zoom, click any step to inspect its input, output and eval. Saved runs replay real tool inputs/outputs (PubCrawl over PubMed &amp; ClinicalTrials.gov): the lecanemab run is curated, with illustrative timings; the other two are live runs recorded on Claude Sonnet 4.6. Run live executes a real <strong>Claude Sonnet 5.5 + PubCrawl</strong> agent.</p>
 </div>
 </section>

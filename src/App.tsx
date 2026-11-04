@@ -93,18 +93,6 @@ function App() {
     return () => window.removeEventListener('message', onMessage)
   }, [embed])
 
-  // Optional ?replay=1 deep-link auto-starts the live replay on load.
-  const didAutoReplay = useRef(false)
-  useEffect(() => {
-    if (!fullTrace || didAutoReplay.current) return
-    const params = new URLSearchParams(window.location.search)
-    if (params.get('replay') === '1') {
-      didAutoReplay.current = true
-      replay(params.get('trace') || undefined)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fullTrace])
-
   const replay = (traceId?: string) => {
     if (streaming) return
     closerRef.current?.()
@@ -163,7 +151,21 @@ function App() {
   }
 
   // Keep the postMessage handlers pointing at the current closures.
-  actionsRef.current = { liveRun, replay }
+  useEffect(() => {
+    actionsRef.current = { liveRun, replay }
+  })
+
+  // Optional ?replay=1 deep-link auto-starts the live replay on load. Declared after the effect
+  // above, so it runs with the current replay closure.
+  const didAutoReplay = useRef(false)
+  useEffect(() => {
+    if (!fullTrace || didAutoReplay.current) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('replay') === '1') {
+      didAutoReplay.current = true
+      actionsRef.current.replay(params.get('trace') || undefined)
+    }
+  }, [fullTrace])
 
   // The header's Replay button replays whatever run is on the canvas (a saved run, or a live run
   // reopened with ?run=), not always the default one.

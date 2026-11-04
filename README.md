@@ -7,6 +7,8 @@ out, and whether it was any good.
 
 Think *LangSmith traces meet an infinite canvas* — agent observability you can actually see.
 
+**Live demo:** [pharmatools.ai/agent-trace-canvas](https://www.pharmatools.ai/agent-trace-canvas) — replay saved runs, run a real agent, or [compare two models on the same question](https://agent-trace-canvas-production.up.railway.app/?compare=tranexamic-acid,tranexamic-acid-s55).
+
 ![Agent Trace Canvas](docs/screenshot.png)
 
 ## Why
@@ -34,7 +36,8 @@ canvas. (Latency/token figures are illustrative; the tool I/O is real.)
 - **Camera modes** — **Follow** (the view tracks the active step at a readable zoom, glides along, then zooms out to the whole trace at the end) or **Fit** (whole graph), toggled live.
 - **Live inspector** — during a run the detail panel follows the active step and reveals the final card when it ends, so content stays readable even on long runs.
 - **Mini-map** — an overview with a draggable viewport box.
-- **Deep links & embedding** — `?node=<id>` opens a step · `?replay=1` auto-starts replay · `?embed=1` hides chrome for iframes. When embedded, the host page can drive the canvas via `postMessage` (`{ source: 'atc', type: 'run' | 'replay' }`).
+- **Compare two runs** — `?compare=<a>,<b>` puts two saved runs side by side: a strip of differences (model, steps, tokens, the searches each run made, which papers each fetched — both, only A or only B, linked to PubMed — and each eval with its note) above two interactive canvases. [Try it](https://agent-trace-canvas-production.up.railway.app/?compare=tranexamic-acid,tranexamic-acid-s55) with the same tranexamic acid question run on Claude Sonnet 4.6 (WARN 0.78) and Sonnet 5.5 (PASS 0.97). One run per model, so it shows a difference, not a measured effect; each run is graded by the same faithfulness check on its own model.
+- **Deep links & embedding** — `?node=<id>` opens a step · `?trace=<saved run>&replay=1` replays a saved run · `?view=<saved run>` shows one without replaying · `?run=live_<id>` reopens a finished live run (kept for two hours) · `?compare=<a>,<b>` compares two saved runs · `?embed=1` hides chrome for iframes. When embedded, the host page can drive the canvas via `postMessage` (`{ source: 'atc', type: 'run' | 'replay' | 'select' }`) and gets the current trace back (`{ source: 'atc-app', type: 'trace' }`).
 
 ## Stack
 
@@ -101,6 +104,8 @@ railway up
 - [x] **Live agent mode** — run a real agent (Claude Sonnet 5.5 + PubCrawl MCP), rate-limited
 - [x] **Camera modes** — follow-the-agent zoom (with eased glide) / fit-whole-graph, plus a live-following inspector
 - [x] **Embeddable** — `?embed=1` + host-page `postMessage` control
+- [x] **Compare two runs** — side-by-side canvases with a deterministic diff of searches, papers and evals
+- [ ] Repeat runs per model, so a comparison measures an effect rather than showing one difference
 - [ ] PixiJS/WebGL renderer for very large traces
 
 ---

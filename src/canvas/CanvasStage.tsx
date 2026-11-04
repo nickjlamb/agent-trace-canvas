@@ -39,23 +39,26 @@ export function CanvasStage() {
   const targetRef = useRef<{ scale: number; x: number; y: number } | null>(null)
   const rafRef = useRef(0)
   const animate = useCallback(() => {
-    const t = targetRef.current
-    if (!t) return
-    const cur = useStore.getState().viewport
-    const k = 0.22
-    let nx = cur.x + (t.x - cur.x) * k
-    let ny = cur.y + (t.y - cur.y) * k
-    let ns = cur.scale + (t.scale - cur.scale) * k
-    const done =
-      Math.abs(t.x - nx) < 0.5 && Math.abs(t.y - ny) < 0.5 && Math.abs(t.scale - ns) < 0.002
-    if (done) {
-      nx = t.x
-      ny = t.y
-      ns = t.scale
-      targetRef.current = null
+    const step = () => {
+      const t = targetRef.current
+      if (!t) return
+      const cur = useStore.getState().viewport
+      const k = 0.22
+      let nx = cur.x + (t.x - cur.x) * k
+      let ny = cur.y + (t.y - cur.y) * k
+      let ns = cur.scale + (t.scale - cur.scale) * k
+      const done =
+        Math.abs(t.x - nx) < 0.5 && Math.abs(t.y - ny) < 0.5 && Math.abs(t.scale - ns) < 0.002
+      if (done) {
+        nx = t.x
+        ny = t.y
+        ns = t.scale
+        targetRef.current = null
+      }
+      setViewport({ x: nx, y: ny, scale: ns })
+      if (!done) rafRef.current = requestAnimationFrame(step)
     }
-    setViewport({ x: nx, y: ny, scale: ns })
-    if (!done) rafRef.current = requestAnimationFrame(animate)
+    step()
   }, [setViewport])
 
   const glideTo = useCallback(
